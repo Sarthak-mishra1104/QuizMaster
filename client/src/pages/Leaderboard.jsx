@@ -2,7 +2,7 @@
  * Leaderboard Page - Global and Weekly Rankings
  */
 import React, { useEffect, useState } from 'react';
-import { Trophy, Zap, Target as _Target, Medal } from 'lucide-react';
+import { Trophy, Zap, Medal } from 'lucide-react';
 import api from '../services/api';
 import './Leaderboard.css';
 

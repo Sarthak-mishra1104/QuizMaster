@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  User as _User, Edit3, Save, X, Github, Linkedin, Twitter,
+   Edit3, Save, X, Github, Linkedin, Twitter,
   Globe, BookOpen, Trophy, Target, Zap, BarChart2,
 } from 'lucide-react';
 import api from '../services/api';
