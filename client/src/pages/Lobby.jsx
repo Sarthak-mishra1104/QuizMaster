@@ -65,10 +65,10 @@ const Lobby = () => {
       toast(`${name} left the room`, { icon: '👋', duration: 2000 });
     };
 
-    const onGameStarted = ({ totalQuestions, settings }) => {
+   const onGameStarted = ({ totalQuestions, settings }) => {
+      console.log('Game started! Navigating to game...');
       navigate(`/game/${code}`, { state: { totalQuestions, settings } });
     };
-
     socket.on('player-joined', onPlayerJoined);
     socket.on('player-left', onPlayerLeft);
     socket.on('game-started', onGameStarted);
