@@ -21,15 +21,21 @@ const generateRoomCode = async () => {
 const calculateFinalRankings = (players) => {
   const sorted = [...players].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    const aAcc = a.answers.length > 0 ? a.answers.filter(x => x.isCorrect).length / a.answers.length : 0;
-    const bAcc = b.answers.length > 0 ? b.answers.filter(x => x.isCorrect).length / b.answers.length : 0;
+    const aAcc = a.answers.length > 0
+      ? a.answers.filter(x => x.isCorrect).length / a.answers.length
+      : 0;
+    const bAcc = b.answers.length > 0
+      ? b.answers.filter(x => x.isCorrect).length / b.answers.length
+      : 0;
     return bAcc - aAcc;
   });
 
   return sorted.map((player, index) => {
     const totalAnswers = player.answers.length;
     const correctAnswers = player.answers.filter(a => a.isCorrect).length;
-    const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
+    const accuracy = totalAnswers > 0
+      ? Math.round((correctAnswers / totalAnswers) * 100)
+      : 0;
 
     return {
       ...player,
@@ -41,14 +47,13 @@ const calculateFinalRankings = (players) => {
   });
 };
 
-const calculatePoints = ({ isCorrect, timeTaken, timeLimit, difficulty }) => {
+const calculatePoints = ({ isCorrect, timeTaken, timeLimit }) => {
   if (!isCorrect) return 0;
-
-  // Simple: 10 points per correct answer + speed bonus
   const basePoints = 10;
-  const timeRatio = Math.max(0, (timeLimit - timeTaken) / timeLimit);
+  const safeTimeTaken = timeTaken || 0;
+  const safeTimeLimit = timeLimit || 30;
+  const timeRatio = Math.max(0, (safeTimeLimit - safeTimeTaken) / safeTimeLimit);
   const speedBonus = Math.round(timeRatio * 5);
-
   return basePoints + speedBonus;
 };
 

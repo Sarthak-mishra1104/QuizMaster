@@ -1,6 +1,3 @@
-/**
- * Dashboard - Main hub after login
- */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -10,14 +7,15 @@ import JoinRoomModal from '../components/game/JoinRoomModal';
 import './Dashboard.css';
 
 const Dashboard = () => {
-const { user, verify } = useAuth();
+  const { user, verify } = useAuth();
+  const navigate = useNavigate();
+  const [showCreate, setShowCreate] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
 
+  // Refresh user stats every time dashboard loads
   useEffect(() => {
     verify();
   }, []);
-    const navigate = useNavigate();
-  const [showCreate, setShowCreate] = useState(false);
-  const [showJoin, setShowJoin] = useState(false);
 
   const firstName = user?.name?.split(' ')[0] || 'Player';
 
@@ -37,13 +35,10 @@ const { user, verify } = useAuth();
   return (
     <div className="page">
       <div className="container">
-        {/* Welcome Header */}
         <div className="dashboard-welcome animate-fadeIn">
           <div className="welcome-left">
             <div className="section-eyebrow">Ready to play?</div>
-            <h1 className="welcome-title">
-              Hello, {firstName}! 👋
-            </h1>
+            <h1 className="welcome-title">Hello, {firstName}! 👋</h1>
             <p style={{ color: 'var(--gray-500)', fontSize: '1.05rem', maxWidth: 480 }}>
               Challenge yourself with AI-generated quizzes or battle friends in real-time multiplayer rooms.
             </p>
@@ -53,7 +48,6 @@ const { user, verify } = useAuth();
           )}
         </div>
 
-        {/* Stats Grid */}
         <div className="stats-grid animate-fadeIn">
           {stats.map((stat, i) => (
             <div key={i} className={`stat-card stat-card-${stat.color}`}>
@@ -64,7 +58,6 @@ const { user, verify } = useAuth();
           ))}
         </div>
 
-        {/* Action Cards */}
         <div className="action-grid animate-slideUp">
           <div className="action-card action-card-primary" onClick={() => setShowCreate(true)}>
             <div className="action-card-bg" />
@@ -90,7 +83,6 @@ const { user, verify } = useAuth();
           </div>
         </div>
 
-        {/* Quick Topics */}
         <div className="quick-topics animate-fadeIn">
           <div className="section-eyebrow">Popular Topics</div>
           <h2 className="section-title">Quick Start</h2>
@@ -102,10 +94,7 @@ const { user, verify } = useAuth();
               <button
                 key={topic}
                 className="topic-chip"
-                onClick={() => {
-                  navigate('/room/create', { state: { topic } });
-                  setShowCreate(true);
-                }}
+                onClick={() => setShowCreate(true)}
               >
                 {topic}
                 <ChevronRight size={14} />
@@ -114,7 +103,6 @@ const { user, verify } = useAuth();
           </div>
         </div>
 
-        {/* Recent Activity */}
         {user?.quizHistory?.length > 0 && (
           <div className="recent-section animate-fadeIn">
             <div className="flex justify-between items-center mb-4">
