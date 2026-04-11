@@ -1,7 +1,7 @@
 /**
  * Dashboard - Main hub after login
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Users, Trophy, BookOpen, Zap, ChevronRight, Target } from 'lucide-react';
