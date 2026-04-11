@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  User, Edit3, Save, X, Github, Linkedin, Twitter,
+  User as _User, Edit3, Save, X, Github, Linkedin, Twitter,
   Globe, BookOpen, Trophy, Target, Zap, BarChart2,
 } from 'lucide-react';
 import api from '../services/api';
@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 import './Profile.css';
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { User as _User, updateUser } = useAuth();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);

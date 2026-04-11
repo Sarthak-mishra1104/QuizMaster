@@ -32,7 +32,7 @@ const Game = () => {
   });
 
   const timerRef = useRef(null);
-  const audioRef = useRef({});
+  // audioRef removed
 
   // Sounds (simple beep using Web Audio API)
   const playSound = (type) => {
