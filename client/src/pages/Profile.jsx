@@ -1,11 +1,8 @@
-/**
- * Profile Page - User stats, history, and editable info
- */
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-   Edit3, Save, X, Github, Linkedin, Twitter,
+  Edit3, Save, X, Github, Linkedin, Twitter,
   Globe, BookOpen, Trophy, Target, Zap, BarChart2,
 } from 'lucide-react';
 import api from '../services/api';
@@ -13,7 +10,7 @@ import toast from 'react-hot-toast';
 import './Profile.css';
 
 const Profile = () => {
-  const { User as _User, updateUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -88,7 +85,6 @@ const Profile = () => {
   return (
     <div className="page">
       <div className="container-md">
-        {/* Profile Header */}
         <div className="profile-header card animate-fadeIn">
           <div className="profile-cover" />
           <div className="profile-info">
@@ -146,7 +142,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Bio */}
           <div className="profile-bio-section">
             {editing ? (
               <textarea
@@ -169,7 +164,6 @@ const Profile = () => {
             )}
           </div>
 
-          {/* Social Links */}
           <div className="social-links">
             {editing ? (
               <div className="social-inputs">
@@ -203,7 +197,6 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Stats Grid */}
         <div className="profile-stats animate-slideUp">
           {stats.map((stat, i) => (
             <div key={i} className="profile-stat-card" style={{ '--stat-color': stat.color }}>
@@ -214,7 +207,6 @@ const Profile = () => {
           ))}
         </div>
 
-        {/* Quiz History */}
         <div className="history-section card animate-fadeIn">
           <div className="history-header">
             <h3>Quiz History</h3>
