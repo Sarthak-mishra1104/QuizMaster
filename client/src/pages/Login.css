@@ -4,11 +4,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 84px 24px 24px;
   position: relative;
   overflow: hidden;
 }
-
 .login-bg-decoration {
   position: absolute;
   inset: 0;

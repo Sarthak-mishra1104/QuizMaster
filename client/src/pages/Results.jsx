@@ -29,9 +29,19 @@ const Results = () => {
 
   useEffect(() => {
     if (!data) return;
-    const myRank = data.rankings?.find(r => r.name === user?.name)?.rank;
+    const sortedRankings = getSortedRankings(data.rankings || []);
+    const myRank = sortedRankings.find(r => r.name === user?.name)?.rank;
     if (myRank === 1) createConfetti();
   }, [data, user]);
+
+  const getSortedRankings = (rankings) => {
+    return [...rankings]
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return (b.accuracy || 0) - (a.accuracy || 0);
+      })
+      .map((p, i) => ({ ...p, rank: i + 1 }));
+  };
 
   const createConfetti = () => {
     const colors = ['#4169E1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
@@ -60,8 +70,9 @@ const Results = () => {
 
   if (!data) return null;
 
-  const { rankings = [], questions = [], topic } = data;
-  const myResult = rankings.find(r => r.name === user?.name);
+  const { questions = [], topic } = data;
+  const sortedRankings = getSortedRankings(data.rankings || []);
+  const myResult = sortedRankings.find(r => r.name === user?.name);
 
   return (
     <div className="page">
@@ -79,13 +90,20 @@ const Results = () => {
         {myResult && (
           <div className={`my-result-card animate-slideUp ${myResult.rank === 1 ? 'winner' : ''}`}>
             <div className="my-result-inner">
-              <div style={{ fontSize: '2rem' }}>{MEDALS[myResult.rank - 1] || `#${myResult.rank}`}</div>
-              <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {myResult.avatar ? (
+                  <img src={myResult.avatar} alt={myResult.name} className="avatar avatar-lg" />
+                ) : (
+                  <div className="avatar avatar-lg">{myResult.name?.charAt(0)}</div>
+                )}
+                <div style={{ fontSize: '2rem' }}>{MEDALS[myResult.rank - 1] || `#${myResult.rank}`}</div>
+              </div>
+              <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--gray-900)' }}>
                   {myResult.rank === 1 ? '🎉 You Won!' : myResult.rank === 2 ? 'Runner Up!' : `You Ranked #${myResult.rank}`}
                 </div>
-                <div style={{ color: 'var(--gray-500)', fontSize: '0.9rem' }}>
-                  {myResult.correctAnswers}/{questions.length} correct · {myResult.accuracy}% accuracy
+                <div style={{ color: 'var(--gray-500)', fontSize: '0.9rem', marginTop: 4 }}>
+                  {myResult.correctAnswers || 0}/{questions.length} correct · {myResult.accuracy || 0}% accuracy
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -101,9 +119,10 @@ const Results = () => {
         <div className="rankings-card card animate-slideUp">
           <div className="rankings-header">
             <h3>Final Rankings</h3>
+            <span style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>Sorted by score & accuracy</span>
           </div>
           <div className="rankings-list">
-            {rankings.map((player, i) => (
+            {sortedRankings.map((player, i) => (
               <div key={i} className={`ranking-row ${player.name === user?.name ? 'me' : ''}`}>
                 <div className="rank-medal">
                   {i < 3 ? MEDALS[i] : <span style={{ color: 'var(--gray-400)', fontWeight: 700 }}>#{i + 1}</span>}
@@ -118,10 +137,12 @@ const Results = () => {
                 <div className="rank-info">
                   <div className="rank-name">
                     {player.name}
-                    {player.name === user?.name && <span className="badge badge-blue" style={{ marginLeft: 8 }}>You</span>}
+                    {player.name === user?.name && (
+                      <span className="badge badge-blue" style={{ marginLeft: 8 }}>You</span>
+                    )}
                   </div>
                   <div className="rank-stats">
-                    {player.correctAnswers || 0}/{player.totalQuestions || 0} correct · {player.accuracy || 0}% accuracy
+                    {player.correctAnswers || 0}/{player.totalQuestions || questions.length} correct · {player.accuracy || 0}% accuracy
                   </div>
                 </div>
                 <div className="rank-score">
@@ -151,7 +172,7 @@ const Results = () => {
                       <div className="review-options">
                         {q.options.map((opt, j) => (
                           <div key={j} className={`review-option ${j === q.correctAnswer ? 'correct' : ''}`}>
-                            <span className="review-option-label">{['A','B','C','D'][j]}</span>
+                            <span className="review-option-label">{['A', 'B', 'C', 'D'][j]}</span>
                             {opt}
                           </div>
                         ))}

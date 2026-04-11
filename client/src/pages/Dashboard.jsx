@@ -10,8 +10,12 @@ import JoinRoomModal from '../components/game/JoinRoomModal';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+const { user, verify } = useAuth();
+
+  useEffect(() => {
+    verify();
+  }, []);
+    const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
 
