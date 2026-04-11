@@ -253,8 +253,11 @@ const initializeSocket = (io) => {
         const room = await Room.findOne({ code: socket.roomCode });
         if (!room) return;
 
-        const playerIndex = room.players.findIndex(p => p.socketId === socket.id);
+const playerIndex = room.players.findIndex(
+          p => p.socketId === socket.id || p.userId?.toString() === socket.user?._id.toString()
+        );
         if (playerIndex === -1) return;
+       
 
         room.players[playerIndex].isConnected = false;
 
