@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Trophy, RotateCcw, Home, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trophy, RotateCcw, Home, ChevronDown, ChevronUp, Target, Zap } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import './Results.css';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
+const RANK_COLORS = ['#f59e0b', '#94a3b8', '#cd7c2f'];
+const RANK_BG = ['#fef9c3', '#f1f5f9', '#fdf4ec'];
 
 const Results = () => {
   const { code } = useParams();
@@ -27,13 +29,6 @@ const Results = () => {
     }
   }, [code, data, navigate]);
 
-  useEffect(() => {
-    if (!data) return;
-    const sortedRankings = getSortedRankings(data.rankings || []);
-    const myRank = sortedRankings.find(r => r.name === user?.name)?.rank;
-    if (myRank === 1) createConfetti();
-  }, [data, user]);
-
   const getSortedRankings = (rankings) => {
     return [...rankings]
       .sort((a, b) => {
@@ -43,9 +38,16 @@ const Results = () => {
       .map((p, i) => ({ ...p, rank: i + 1 }));
   };
 
+  useEffect(() => {
+    if (!data) return;
+    const sortedRankings = getSortedRankings(data.rankings || []);
+    const myRank = sortedRankings.find(r => r.name === user?.name)?.rank;
+    if (myRank === 1) createConfetti();
+  }, [data, user]);
+
   const createConfetti = () => {
     const colors = ['#4169E1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 80; i++) {
       const el = document.createElement('div');
       el.style.cssText = `
         position:fixed; pointer-events:none; z-index:9999;
@@ -62,7 +64,7 @@ const Results = () => {
 
   if (loading) {
     return (
-      <div className="page flex items-center justify-center">
+      <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="spinner" />
       </div>
     );
@@ -77,6 +79,8 @@ const Results = () => {
   return (
     <div className="page">
       <div className="container-md">
+
+        {/* Header */}
         <div className="results-header animate-bounceIn">
           <div className="results-trophy">
             <Trophy size={40} fill="#f59e0b" color="#f59e0b" />
@@ -87,75 +91,177 @@ const Results = () => {
           </p>
         </div>
 
+        {/* My Result Card */}
         {myResult && (
           <div className={`my-result-card animate-slideUp ${myResult.rank === 1 ? 'winner' : ''}`}>
             <div className="my-result-inner">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 {myResult.avatar ? (
-                  <img src={myResult.avatar} alt={myResult.name} className="avatar avatar-lg" />
+                  <img src={myResult.avatar} alt={myResult.name} className="avatar avatar-lg" style={{ border: '3px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} />
                 ) : (
-                  <div className="avatar avatar-lg">{myResult.name?.charAt(0)}</div>
+                  <div className="avatar avatar-lg" style={{ background: 'linear-gradient(135deg, var(--blue-400), var(--blue-700))', color: 'white', fontWeight: 800 }}>
+                    {myResult.name?.charAt(0)}
+                  </div>
                 )}
-                <div style={{ fontSize: '2rem' }}>{MEDALS[myResult.rank - 1] || `#${myResult.rank}`}</div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--gray-900)' }}>
-                  {myResult.rank === 1 ? '🎉 You Won!' : myResult.rank === 2 ? 'Runner Up!' : `You Ranked #${myResult.rank}`}
-                </div>
-                <div style={{ color: 'var(--gray-500)', fontSize: '0.9rem', marginTop: 4 }}>
-                  {myResult.correctAnswers || 0}/{questions.length} correct · {myResult.accuracy || 0}% accuracy
+                <div>
+                  <div style={{ fontSize: '1.8rem' }}>{MEDALS[myResult.rank - 1] || `#${myResult.rank}`}</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--gray-900)' }}>
+                    {myResult.rank === 1 ? '🎉 You Won!' : myResult.rank === 2 ? '🥈 Runner Up!' : `You Ranked #${myResult.rank}`}
+                  </div>
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--blue-600)' }}>
-                  {(myResult.score || 0).toLocaleString()}
+              <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--blue-600)' }}>
+                    {(myResult.score || 0).toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 600 }}>POINTS</div>
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 600 }}>POINTS</div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--success)' }}>
+                    {myResult.correctAnswers || 0}/{questions.length}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 600 }}>CORRECT</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--blue-500)' }}>
+                    {myResult.accuracy || 0}%
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 600 }}>ACCURACY</div>
+                </div>
               </div>
             </div>
           </div>
         )}
 
+        {/* Full Leaderboard */}
         <div className="rankings-card card animate-slideUp">
-          <div className="rankings-header">
-            <h3>Final Rankings</h3>
-            <span style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>Sorted by score & accuracy</span>
+          <div className="rankings-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Trophy size={18} color="var(--blue-500)" /> Final Leaderboard
+            </h3>
+            <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>
+              Ranked by points · accuracy
+            </span>
           </div>
+
+          {/* Table Header */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '50px 1fr 100px 100px 100px',
+            gap: 8,
+            padding: '10px 20px',
+            background: 'var(--gray-50)',
+            borderBottom: '1px solid var(--gray-200)',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            color: 'var(--gray-500)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}>
+            <span>Rank</span>
+            <span>Player</span>
+            <span style={{ textAlign: 'center' }}>Correct</span>
+            <span style={{ textAlign: 'center' }}>Accuracy</span>
+            <span style={{ textAlign: 'right' }}>Points</span>
+          </div>
+
           <div className="rankings-list">
             {sortedRankings.map((player, i) => (
-              <div key={i} className={`ranking-row ${player.name === user?.name ? 'me' : ''}`}>
-                <div className="rank-medal">
-                  {i < 3 ? MEDALS[i] : <span style={{ color: 'var(--gray-400)', fontWeight: 700 }}>#{i + 1}</span>}
+              <div
+                key={i}
+                className={`ranking-row ${player.name === user?.name ? 'me' : ''}`}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '50px 1fr 100px 100px 100px',
+                  gap: 8,
+                  padding: '14px 20px',
+                  alignItems: 'center',
+                  background: player.name === user?.name ? 'var(--blue-50)' : i < 3 ? RANK_BG[i] : 'white',
+                  borderBottom: '1px solid var(--gray-100)',
+                  transition: 'background var(--transition)',
+                }}
+              >
+                {/* Rank */}
+                <div style={{ textAlign: 'center', fontSize: '1.3rem' }}>
+                  {i < 3
+                    ? MEDALS[i]
+                    : <span style={{ fontWeight: 700, color: 'var(--gray-500)', fontSize: '0.95rem' }}>#{i + 1}</span>
+                  }
                 </div>
-                <div className="rank-avatar">
+
+                {/* Player */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   {player.avatar ? (
-                    <img src={player.avatar} alt={player.name} className="avatar avatar-md" />
+                    <img
+                      src={player.avatar}
+                      alt={player.name}
+                      style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${i < 3 ? RANK_COLORS[i] : 'var(--gray-200)'}`, flexShrink: 0 }}
+                    />
                   ) : (
-                    <div className="avatar avatar-md">{player.name?.charAt(0)}</div>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: '50%',
+                      background: i < 3 ? RANK_COLORS[i] : 'var(--blue-100)',
+                      color: i < 3 ? 'white' : 'var(--blue-700)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 800, fontSize: '1rem', flexShrink: 0,
+                      border: `2px solid ${i < 3 ? RANK_COLORS[i] : 'var(--gray-200)'}`,
+                    }}>
+                      {player.name?.charAt(0)}
+                    </div>
                   )}
+                  <div>
+                    <div style={{ fontWeight: 700, color: 'var(--gray-900)', fontSize: '0.95rem' }}>
+                      {player.name}
+                      {player.name === user?.name && (
+                        <span style={{
+                          marginLeft: 6, fontSize: '0.7rem', background: 'var(--blue-500)',
+                          color: 'white', padding: '2px 6px', borderRadius: '99px', fontWeight: 700,
+                        }}>You</span>
+                      )}
+                    </div>
+                    {i === 0 && <div style={{ fontSize: '0.72rem', color: RANK_COLORS[0], fontWeight: 600 }}>👑 Winner</div>}
+                  </div>
                 </div>
-                <div className="rank-info">
-                  <div className="rank-name">
-                    {player.name}
-                    {player.name === user?.name && (
-                      <span className="badge badge-blue" style={{ marginLeft: 8 }}>You</span>
-                    )}
-                  </div>
-                  <div className="rank-stats">
-                    {player.correctAnswers || 0}/{player.totalQuestions || questions.length} correct · {player.accuracy || 0}% accuracy
-                  </div>
+
+                {/* Correct */}
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{
+                    fontWeight: 700, fontSize: '0.95rem',
+                    color: (player.correctAnswers || 0) > 0 ? 'var(--success)' : 'var(--gray-400)',
+                  }}>
+                    {player.correctAnswers || 0}/{player.totalQuestions || questions.length}
+                  </span>
                 </div>
-                <div className="rank-score">
-                  <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--blue-700)' }}>
-                    {(player.score || 0).toLocaleString()}
+
+                {/* Accuracy */}
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{
+                    fontWeight: 700, fontSize: '0.9rem', padding: '3px 10px',
+                    borderRadius: '99px',
+                    background: (player.accuracy || 0) >= 70 ? 'var(--success-light)' : (player.accuracy || 0) >= 40 ? 'var(--warning-light)' : 'var(--error-light)',
+                    color: (player.accuracy || 0) >= 70 ? '#065f46' : (player.accuracy || 0) >= 40 ? '#92400e' : '#991b1b',
+                  }}>
+                    {player.accuracy || 0}%
+                  </span>
+                </div>
+
+                {/* Points */}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+                    <Zap size={14} fill="var(--blue-500)" color="var(--blue-500)" />
+                    <span style={{ fontWeight: 900, fontSize: '1.1rem', color: i < 3 ? RANK_COLORS[i] : 'var(--blue-700)' }}>
+                      {(player.score || 0).toLocaleString()}
+                    </span>
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--gray-400)' }}>pts</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--gray-400)' }}>pts</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Question Review */}
         {questions.length > 0 && (
           <div className="review-section card animate-fadeIn">
             <button className="review-toggle" onClick={() => setShowReview(!showReview)}>
@@ -188,6 +294,7 @@ const Results = () => {
           </div>
         )}
 
+        {/* Actions */}
         <div className="results-actions animate-fadeIn">
           <button className="btn btn-secondary btn-lg" onClick={() => navigate('/dashboard')}>
             <Home size={18} /> Back to Home
@@ -196,6 +303,7 @@ const Results = () => {
             <RotateCcw size={18} /> Play Again
           </button>
         </div>
+
       </div>
     </div>
   );
