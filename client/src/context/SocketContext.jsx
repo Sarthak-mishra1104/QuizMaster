@@ -26,10 +26,13 @@ export const SocketProvider = ({ children }) => {
 
     const socket = io(SOCKET_URL, {
       auth: { token, userId: user._id },
-      transports: ['websocket', 'polling'],
+      transports: ['websocket'],
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 500,
+      reconnectionDelayMax: 2000,
+      timeout: 10000,
+      forceNew: true,
     });
 
     socket.on('connect', () => {
