@@ -8,7 +8,7 @@ const DEVELOPER = {
   bio: `Passionate about building scalable web applications and AI-powered tools.
 I love creating experiences that are both technically solid and a joy to use.
 QuizMaster AI was built to make learning more engaging and competitive.`,
-  avatar: 'https://avatars.githubusercontent.com/u/203062868?s=400&u=51cd3844f1e740907d0d849dd552d343e2dbf9e3&v=4',
+  avatar: 'https://raw.githubusercontent.com/Sarthak-mishra1104/QuizMaster/main/client/src/pages/profile.jpeg',
   email: 'sarthakmishra.2431078@gmail.com',
   social: {
     github: 'https://github.com/Sarthak-mishra1104',
