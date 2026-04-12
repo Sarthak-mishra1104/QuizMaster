@@ -1,6 +1,3 @@
-/**
- * Game Page - Real-Time Quiz Gameplay
- */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +9,31 @@ import './Game.css';
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 const OPTION_COLORS = ['#4169E1', '#7c3aed', '#f59e0b', '#10b981'];
 
+const playSound = (type) => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (type === 'correct') {
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+    } else if (type === 'wrong') {
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.setValueAtTime(150, ctx.currentTime + 0.2);
+    } else if (type === 'tick') {
+      osc.frequency.setValueAtTime(1000, ctx.currentTime);
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    }
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.4);
+  } catch (e) {}
+};
+
 const Game = () => {
   const { code } = useParams();
   const { user } = useAuth();
@@ -19,7 +41,7 @@ const Game = () => {
   const navigate = useNavigate();
 
   const [gameState, setGameState] = useState({
-    phase: 'waiting', // waiting | question | reveal | finished
+    phase: 'waiting',
     currentQuestion: null,
     questionIndex: 0,
     totalQuestions: 0,
@@ -32,48 +54,17 @@ const Game = () => {
   });
 
   const timerRef = useRef(null);
-  // audioRef removed
-
-  // Sounds (simple beep using Web Audio API)
-  const playSound = (type) => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      if (type === 'correct') {
-        osc.frequency.setValueAtTime(523, ctx.currentTime);
-        osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
-        osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
-      } else if (type === 'wrong') {
-        osc.frequency.setValueAtTime(200, ctx.currentTime);
-        osc.frequency.setValueAtTime(150, ctx.currentTime + 0.2);
-      } else if (type === 'tick') {
-        osc.frequency.setValueAtTime(1000, ctx.currentTime);
-        gain.gain.setValueAtTime(0.05, ctx.currentTime);
-      }
-
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.4);
-    } catch {}
-  };
+  const revealTimerRef = useRef(null);
 
   const startTimer = useCallback((duration) => {
     if (timerRef.current) clearInterval(timerRef.current);
     let t = duration;
     setGameState(prev => ({ ...prev, timeLeft: t }));
-
     timerRef.current = setInterval(() => {
       t--;
       setGameState(prev => ({ ...prev, timeLeft: t }));
       if (t <= 5 && t > 0) playSound('tick');
-      if (t <= 0) {
-        clearInterval(timerRef.current);
-      }
+      if (t <= 0) clearInterval(timerRef.current);
     }, 1000);
   }, []);
 
@@ -92,13 +83,15 @@ const Game = () => {
         isHost: me?.isHost || false,
         totalQuestions: res?.room?.questionCount || 0,
         settings: res?.room?.settings || {},
-        scores: res?.room?.players?.map(p => ({ name: p.name, avatar: p.avatar, score: p.score, userId: p.userId })) || [],
+        scores: res?.room?.players?.map(p => ({
+          name: p.name, avatar: p.avatar, score: p.score, userId: p.userId
+        })) || [],
       }));
     });
 
-    // Question starts
     socket.on('question-start', ({ index, total, question, options, difficulty, timeLimit, currentTurnPlayer }) => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
 
       setGameState(prev => ({
         ...prev,
@@ -110,38 +103,38 @@ const Game = () => {
         result: null,
         timeLeft: timeLimit,
       }));
-
       startTimer(timeLimit);
     });
 
-    // Timer ran out — reveal answer
-    socket.on('question-timeout', ({ index, correctAnswer, explanation }) => {
+    socket.on('question-timeout', ({ correctAnswer, explanation }) => {
       if (timerRef.current) clearInterval(timerRef.current);
       setGameState(prev => ({
         ...prev,
         phase: 'reveal',
-        result: { correctAnswer, explanation, isCorrect: prev.selectedOption === correctAnswer, pointsEarned: 0 },
+        result: {
+          correctAnswer,
+          explanation,
+          isCorrect: prev.selectedOption === correctAnswer,
+          pointsEarned: 0
+        },
       }));
     });
 
-    // Score updates
     socket.on('score-update', ({ scores }) => {
       setGameState(prev => ({ ...prev, scores }));
     });
 
-    // Chat messages
     socket.on('chat-message', ({ name, message }) => {
       toast(`${name}: ${message}`, { icon: '💬', duration: 3000 });
     });
 
-    // Player left
     socket.on('player-left', ({ name }) => {
       toast(`${name} disconnected`, { icon: '👋', duration: 2000 });
     });
 
-    // Game finished
     socket.on('game-finished', (data) => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
       navigate(`/results/${code}`, { state: data });
     });
 
@@ -153,12 +146,15 @@ const Game = () => {
       socket.off('player-left');
       socket.off('game-finished');
       if (timerRef.current) clearInterval(timerRef.current);
+      if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
     };
   }, [socket, code, navigate, user, startTimer]);
 
   const handleAnswer = (optionIndex) => {
     if (gameState.selectedOption !== null || gameState.phase !== 'question') return;
 
+    // Stop timer immediately
+    clearInterval(timerRef.current);
     setGameState(prev => ({ ...prev, selectedOption: optionIndex }));
 
     socket.emit('submit-answer', {
@@ -169,33 +165,36 @@ const Game = () => {
     }, (res) => {
       if (res?.error) return;
 
-      clearInterval(timerRef.current);
       playSound(res.isCorrect ? 'correct' : 'wrong');
 
-      setGameState(prev => ({
-        ...prev,
-        phase: 'reveal',
-        result: res,
-      }));
+      // Show result immediately
+      setGameState(prev => ({ ...prev, phase: 'reveal', result: res }));
+
+      // Auto advance to waiting screen after 1.5 seconds
+      revealTimerRef.current = setTimeout(() => {
+        setGameState(prev => ({
+          ...prev,
+          phase: 'answered',
+          currentQuestion: prev.currentQuestion,
+        }));
+      }, 1500);
     });
   };
 
-  const handleSkip = () => {
-    socket.emit('skip-question', { roomCode: code });
-  };
+  const handleSkip = () => socket.emit('skip-question', { roomCode: code });
 
   const handleEndGame = () => {
-    if (window.confirm('End the game now?')) {
-      socket.emit('end-game', { roomCode: code });
-    }
+    if (window.confirm('End the game now?')) socket.emit('end-game', { roomCode: code });
   };
 
-  const { phase, currentQuestion, questionIndex, totalQuestions, timeLeft, scores, selectedOption, result, isHost, settings } = gameState;
+  const {
+    phase, currentQuestion, questionIndex, totalQuestions,
+    timeLeft, scores, selectedOption, result, isHost, settings
+  } = gameState;
 
   const progress = totalQuestions ? ((questionIndex + 1) / totalQuestions) * 100 : 0;
   const timerPercent = settings.timePerQuestion ? (timeLeft / settings.timePerQuestion) * 100 : 100;
   const timerDanger = timeLeft <= 5;
-
   const sortedScores = [...scores].sort((a, b) => b.score - a.score);
 
   if (phase === 'waiting') {
@@ -209,20 +208,74 @@ const Game = () => {
     );
   }
 
+  // Show waiting screen after answering
+  if (phase === 'answered') {
+    return (
+      <div className="game-page">
+        <div className="game-header">
+          <div className="game-header-inner">
+            <div className="game-progress-info">
+              <span className="game-q-label">Question</span>
+              <span className="game-q-count">{questionIndex + 1} / {totalQuestions}</span>
+            </div>
+            <div className="game-progress-bar">
+              <div className="progress-fill" style={{ width: `${progress}%` }} />
+            </div>
+            <div className="game-header-right" />
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20 }}>
+          <div style={{ fontSize: '3rem' }}>{result?.isCorrect ? '🎉' : '😅'}</div>
+          <h2 style={{ fontWeight: 800, color: result?.isCorrect ? 'var(--success)' : 'var(--error)' }}>
+            {result?.isCorrect ? `+${result.pointsEarned} points!` : 'Not quite!'}
+          </h2>
+          {result?.explanation && (
+            <p style={{ color: 'var(--gray-600)', maxWidth: 400, textAlign: 'center', fontSize: '0.95rem' }}>
+              💡 {result.explanation}
+            </p>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--gray-500)', fontSize: '0.9rem' }}>
+            <div className="spinner spinner-sm" />
+            Waiting for next question...
+          </div>
+          {/* Live scores */}
+          <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {sortedScores.map((player, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 16px', background: 'white',
+                borderRadius: 'var(--radius)', border: '1px solid var(--gray-200)',
+                boxShadow: 'var(--shadow-sm)',
+              }}>
+                <span>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}</span>
+                {player.avatar
+                  ? <img src={player.avatar} alt={player.name} className="avatar avatar-sm" />
+                  : <div className="avatar avatar-sm">{player.name?.charAt(0)}</div>
+                }
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{player.name?.split(' ')[0]}</span>
+                <span style={{ fontWeight: 800, color: 'var(--blue-600)' }}>
+                  <Zap size={12} fill="var(--blue-500)" color="var(--blue-500)" style={{ display: 'inline' }} />
+                  {player.score}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="game-page">
-      {/* Header */}
       <div className="game-header">
         <div className="game-header-inner">
           <div className="game-progress-info">
             <span className="game-q-label">Question</span>
             <span className="game-q-count">{questionIndex + 1} / {totalQuestions}</span>
           </div>
-
           <div className="game-progress-bar">
             <div className="progress-fill" style={{ width: `${progress}%` }} />
           </div>
-
           <div className="game-header-right">
             {isHost && (
               <>
@@ -239,9 +292,7 @@ const Game = () => {
       </div>
 
       <div className="game-layout">
-        {/* Main question area */}
         <div className="game-main">
-          {/* Timer */}
           <div className="timer-wrapper">
             <svg className="timer-svg" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="45" fill="none" stroke="var(--gray-200)" strokeWidth="8" />
@@ -259,7 +310,6 @@ const Game = () => {
             <div className={`timer-value ${timerDanger ? 'danger' : ''}`}>{timeLeft}</div>
           </div>
 
-          {/* Question */}
           {currentQuestion && (
             <>
               <div className="question-card animate-fadeIn">
@@ -274,7 +324,6 @@ const Game = () => {
                 <h2 className="question-text">{currentQuestion.question}</h2>
               </div>
 
-              {/* Options */}
               <div className="options-grid animate-slideUp">
                 {currentQuestion.options?.map((option, i) => {
                   let optionClass = 'option-btn';
@@ -285,7 +334,6 @@ const Game = () => {
                   } else if (selectedOption === i) {
                     optionClass += ' selected';
                   }
-
                   return (
                     <button
                       key={i}
@@ -301,7 +349,6 @@ const Game = () => {
                 })}
               </div>
 
-              {/* Result feedback */}
               {phase === 'reveal' && result && (
                 <div className={`result-feedback animate-bounceIn ${result.isCorrect ? 'correct' : 'wrong'}`}>
                   <div className="result-icon">{result.isCorrect ? '🎉' : '❌'}</div>
@@ -319,7 +366,6 @@ const Game = () => {
           )}
         </div>
 
-        {/* Sidebar: Scoreboard */}
         <div className="game-sidebar">
           <div className="sidebar-header">
             <Users size={16} />
