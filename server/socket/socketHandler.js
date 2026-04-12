@@ -113,7 +113,7 @@ const initializeSocket = (io) => {
           settings: room.settings,
         });
 
-        setTimeout(() => sendQuestion(io, room, roomCode.toUpperCase()), 3000);
+        setTimeout(() => sendQuestion(io, room, roomCode.toUpperCase()), 2000);
       } catch (err) {
         console.error('start-game error:', err);
         callback?.({ error: 'Failed to start game' });
@@ -125,7 +125,6 @@ const initializeSocket = (io) => {
         const room = await Room.findOne({ code: roomCode.toUpperCase() });
         if (!room || room.status !== 'playing') return;
 
-        // Find player by userId (more reliable than socketId)
         const playerIndex = room.players.findIndex(
           p => p.userId?.toString() === socket.user?._id.toString()
         );
@@ -156,12 +155,11 @@ const initializeSocket = (io) => {
           pointsEarned,
         });
         room.players[playerIndex].score += pointsEarned;
-
-        // Update socketId to current
         room.players[playerIndex].socketId = socket.id;
 
         await room.save();
 
+        // Send result immediately to answering player
         callback?.({
           isCorrect,
           correctAnswer: question.correctAnswer,
@@ -170,6 +168,7 @@ const initializeSocket = (io) => {
           totalScore: room.players[playerIndex].score,
         });
 
+        // Broadcast updated scores to all
         const scores = room.players.map(p => ({
           name: p.name,
           avatar: p.avatar,
@@ -178,6 +177,7 @@ const initializeSocket = (io) => {
         }));
         io.to(roomCode.toUpperCase()).emit('score-update', { scores });
 
+        // Check if ALL connected players answered
         const connectedPlayers = room.players.filter(p => p.isConnected);
         const answeredCount = room.players.filter(
           p => p.answers.some(a => a.questionIndex === questionIndex)
@@ -189,7 +189,8 @@ const initializeSocket = (io) => {
             clearTimeout(timer);
             roomTimers.delete(roomCode.toUpperCase());
           }
-          moveToNextQuestion(io, room, roomCode.toUpperCase());
+          // Move to next question after short delay
+          setTimeout(() => moveToNextQuestion(io, room, roomCode.toUpperCase()), 1500);
         }
 
       } catch (err) {
@@ -299,7 +300,8 @@ const sendQuestion = (io, room, roomCode) => {
           correctAnswer: question.correctAnswer,
           explanation: question.explanation,
         });
-        setTimeout(() => moveToNextQuestion(io, freshRoom, roomCode), 2000);
+        // Move to next after 1.5 seconds
+        setTimeout(() => moveToNextQuestion(io, freshRoom, roomCode), 1500);
       }
     } catch (err) {
       console.error('Timer error:', err);
@@ -321,7 +323,8 @@ const moveToNextQuestion = async (io, room, roomCode) => {
       freshRoom.currentQuestion = nextIndex;
       freshRoom.currentTurnPlayer = (freshRoom.currentTurnPlayer + 1) % freshRoom.players.length;
       await freshRoom.save();
-      setTimeout(() => sendQuestion(io, freshRoom, roomCode), 2000);
+      // Send next question after 1 second
+      setTimeout(() => sendQuestion(io, freshRoom, roomCode), 1000);
     }
   } catch (err) {
     console.error('moveToNextQuestion error:', err);
@@ -330,11 +333,10 @@ const moveToNextQuestion = async (io, room, roomCode) => {
 
 const finishGame = async (io, roomCode) => {
   try {
-    // Always fetch fresh room from DB
     const freshRoom = await Room.findOne({ code: roomCode });
     if (!freshRoom) return;
 
-    // Recalculate scores from answers stored in DB
+    // Recalculate scores from DB answers
     freshRoom.players.forEach(player => {
       let totalScore = 0;
       player.answers.forEach(answer => {
@@ -368,7 +370,6 @@ const finishGame = async (io, roomCode) => {
 
     await freshRoom.save();
 
-    // Update user stats
     for (const player of rankings) {
       if (!player.userId) continue;
       try {
