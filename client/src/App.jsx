@@ -34,7 +34,9 @@ const ProtectedRoute = ({ children }) => {
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  return user ? <Navigate to="/role-select" replace /> : children;
+  if (!user) return children;
+  if (!user.role) return <Navigate to="/role-select" replace />;
+  return <Navigate to="/dashboard" replace />;
 };
 
 // Route that checks if user has selected a role
