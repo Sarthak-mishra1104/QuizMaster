@@ -1,6 +1,3 @@
-/**
- * RoleSelect Page - Choose role after Google login
- */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -14,33 +11,30 @@ const roles = [
     emoji: '👨‍🏫',
     title: 'Teacher',
     subtitle: 'Host Mode',
-    description: 'Create quizzes, manage students, view live leaderboard and monitor participants in real-time.',
+    description: 'Create AI-powered quizzes, review questions before publishing, and monitor students in real-time.',
     color: '#4169E1',
     bg: '#eff4ff',
-    border: '#bfd4fe',
-    features: ['Create AI quizzes', 'Review & edit questions', 'Share quiz code', 'Monitor 40+ students'],
+    features: ['Generate AI quiz questions', 'Review & edit before publish', 'Share quiz code instantly', 'Monitor 40+ students live'],
   },
   {
     id: 'student',
     emoji: '🎓',
     title: 'Student',
     subtitle: 'Learn Mode',
-    description: 'Join quizzes using a code, select your grade and subject, and compete with classmates.',
+    description: 'Join quizzes using a room code, select your grade and subject, and track your performance.',
     color: '#10b981',
     bg: '#f0fdf4',
-    border: '#a7f3d0',
-    features: ['Join with quiz code', 'Select grade & subject', 'View leaderboard', 'Track your progress'],
+    features: ['Join with quiz code', 'Select grade & subject', 'Real-time leaderboard', 'Track your accuracy'],
   },
   {
     id: 'player',
     emoji: '🎮',
-    title: 'Random Quiz',
+    title: 'Quick Play',
     subtitle: 'Play Mode',
-    description: 'Jump into a quick AI-generated quiz on any topic. Play solo or with friends for fun!',
+    description: 'Jump into a fun AI-generated quiz on any topic. Play solo or challenge friends in real-time.',
     color: '#f59e0b',
     bg: '#fffbeb',
-    border: '#fde68a',
-    features: ['Any topic quiz', 'Multiplayer rooms', 'Speed bonus points', 'Global leaderboard'],
+    features: ['Quiz on any topic', 'Multiplayer rooms', 'Speed bonus scoring', 'Global leaderboard'],
   },
 ];
 
@@ -56,9 +50,7 @@ const RoleSelect = () => {
     try {
       const { data } = await api.put('/users/role', { role: roleId });
       updateUser(data.user);
-      toast.success(`Welcome, ${roleId === 'teacher' ? 'Teacher' : roleId === 'student' ? 'Student' : 'Player'}! 🎉`);
-
-      // Redirect based on role
+      toast.success(`Welcome! 🎉`);
       if (roleId === 'teacher') navigate('/teacher/dashboard');
       else if (roleId === 'student') navigate('/student/setup');
       else navigate('/dashboard');
@@ -73,6 +65,7 @@ const RoleSelect = () => {
   return (
     <div className="role-select-page">
       <div className="role-select-container">
+
         {/* Header */}
         <div className="role-select-header animate-fadeIn">
           <div className="role-welcome-avatar">
@@ -83,7 +76,7 @@ const RoleSelect = () => {
             )}
           </div>
           <h1>Welcome, {user?.name?.split(' ')[0]}! 👋</h1>
-          <p>How would you like to use QuizMaster AI today?</p>
+          <p>Choose how you want to use QuizMaster AI</p>
         </div>
 
         {/* Role Cards */}
@@ -92,26 +85,22 @@ const RoleSelect = () => {
             <div
               key={role.id}
               className={`role-card ${selected === role.id ? 'selected' : ''}`}
-              style={{
-                '--role-color': role.color,
-                '--role-bg': role.bg,
-                '--role-border': role.border,
-              }}
+              style={{ '--role-color': role.color, '--role-bg': role.bg }}
               onClick={() => !loading && handleSelect(role.id)}
             >
-              <div className="role-card-emoji">{role.emoji}</div>
+              <div className="role-card-icon">{role.emoji}</div>
               <div className="role-card-badge">{role.subtitle}</div>
               <h2 className="role-card-title">{role.title}</h2>
               <p className="role-card-desc">{role.description}</p>
+              <div className="role-card-divider" />
               <ul className="role-card-features">
                 {role.features.map((f, i) => (
-                  <li key={i}>✓ {f}</li>
+                  <li key={i}>{f}</li>
                 ))}
               </ul>
               <button
                 className="role-card-btn"
                 disabled={loading}
-                style={{ background: role.color }}
               >
                 {selected === role.id && loading ? (
                   <><div className="spinner spinner-sm" /> Setting up...</>
@@ -124,7 +113,7 @@ const RoleSelect = () => {
         </div>
 
         <p className="role-change-note">
-          You can change your role anytime from your profile settings.
+          You can switch roles anytime from your profile settings
         </p>
       </div>
     </div>
