@@ -27,15 +27,18 @@ const parseAIResponse = (content, expected) => {
 
   if (!Array.isArray(parsed)) throw new Error('AI response is not an array');
 
-  return parsed.slice(0, expected).map((q, i) => {
-    // Validate options are real strings not placeholders
+  const seen = new Set();
+  const unique = parsed.filter(q => {
+    const key = q.question?.toLowerCase().trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return unique.slice(0, expected).map((q, i) => {
     let options = Array.isArray(q.options) ? q.options.map(String) : [];
-    
-    // Filter out placeholder options like "Option A", "A", etc
-    const isPlaceholder = (opt) => /^(option\s*[abcd]|[abcd])$/i.test(opt.trim());
-    
+    const isPlaceholder = (opt) => /^(option\s*[abcd]|[abcd]|choice\s*\d)$/i.test(opt.trim());
     if (options.length !== 4 || options.some(isPlaceholder)) {
-      // Try to extract options from alternative formats
       options = [
         q.option_a || q.optionA || q.a || options[0] || `Choice ${i}A`,
         q.option_b || q.optionB || q.b || options[1] || `Choice ${i}B`,
@@ -54,74 +57,125 @@ const parseAIResponse = (content, expected) => {
   });
 };
 
-async function generateFromTopic({ topic, numQuestions = 10, difficulty = 'medium' }) {
-  const client = getClient();
+const generateBatch = async (client, topic, count, difficulty, existingQuestions = []) => {
+  const existingList = existingQuestions.length > 0
+    ? `\n\nDO NOT REPEAT THESE QUESTIONS:\n${existingQuestions.map((q, i) => `${i + 1}. ${q.question}`).join('\n')}`
+    : '';
 
-  const prompt = `Generate exactly ${numQuestions} multiple choice quiz questions about "${topic}" with ${difficulty} difficulty.
+  const prompt = `Generate exactly ${count} UNIQUE multiple choice questions about "${topic}" with ${difficulty} difficulty.
 
-IMPORTANT: Return ONLY a valid JSON array. No markdown, no explanation text.
+STRICT RULES:
+- Every question MUST be completely different from others
+- No similar or rephrased questions
+- Cover different aspects and subtopics of "${topic}"
+- Each question tests a DIFFERENT concept
+- 4 real answer choices per question (NOT "Option A", "Option B" etc)
+- correctAnswer is index 0-3${existingList}
 
-Each question must follow this EXACT format:
+Return ONLY a JSON array:
 [
   {
-    "question": "What is the capital of France?",
-    "options": ["Paris", "London", "Berlin", "Madrid"],
+    "question": "Specific unique question?",
+    "options": ["Real answer 1", "Real answer 2", "Real answer 3", "Real answer 4"],
     "correctAnswer": 0,
-    "explanation": "Paris is the capital and largest city of France.",
+    "explanation": "Brief explanation",
     "difficulty": "${difficulty}"
   }
-]
-
-Rules:
-- options array must have exactly 4 real answer choices (NOT "Option A", "Option B" etc)
-- correctAnswer is the index (0, 1, 2, or 3) of the correct option
-- All options must be meaningful and specific
-- Questions must be unique`;
+]`;
 
   const response = await client.chat.completions.create({
-    model: 'llama-3.1-8b-instant',
+    model: 'llama-3.3-70b-versatile',
     messages: [{ role: 'user', content: prompt }],
-    temperature: 0.5,
+    temperature: 0.9,
     max_tokens: 4000,
   });
 
-  const text = response.choices[0].message.content;
-  return parseAIResponse(text, numQuestions);
+  return response.choices[0].message.content;
+};
+
+const similarity = (str1, str2) => {
+  const s1 = str1.toLowerCase().trim();
+  const s2 = str2.toLowerCase().trim();
+  if (s1 === s2) return 1;
+  const words1 = new Set(s1.split(/\s+/));
+  const words2 = new Set(s2.split(/\s+/));
+  const intersection = new Set([...words1].filter(w => words2.has(w)));
+  const union = new Set([...words1, ...words2]);
+  return intersection.size / union.size;
+};
+
+async function generateFromTopic({ topic, numQuestions = 10, difficulty = 'medium' }) {
+  const client = getClient();
+  let allQuestions = [];
+
+  if (numQuestions <= 15) {
+    const text = await generateBatch(client, topic, numQuestions, difficulty);
+    allQuestions = parseAIResponse(text, numQuestions);
+  } else {
+    const batchSize = 10;
+    const batches = Math.ceil(numQuestions / batchSize);
+
+    for (let i = 0; i < batches; i++) {
+      const remaining = numQuestions - allQuestions.length;
+      const count = Math.min(batchSize, remaining);
+
+      try {
+        const text = await generateBatch(client, topic, count, difficulty, allQuestions);
+        const batch = parseAIResponse(text, count);
+
+        const newQuestions = batch.filter(newQ => {
+          const newKey = newQ.question.toLowerCase().trim();
+          return !allQuestions.some(existing =>
+            existing.question.toLowerCase().trim() === newKey ||
+            similarity(existing.question, newQ.question) > 0.7
+          );
+        });
+
+        allQuestions = [...allQuestions, ...newQuestions];
+        if (allQuestions.length >= numQuestions) break;
+        if (i < batches - 1) await new Promise(r => setTimeout(r, 500));
+      } catch (err) {
+        console.error(`Batch ${i + 1} failed:`, err.message);
+        break;
+      }
+    }
+  }
+
+  return allQuestions.slice(0, numQuestions);
 }
 
 async function generateFromPDF({ pdfText, numQuestions = 10, difficulty = 'medium' }) {
   const client = getClient();
   const truncatedText = pdfText.length > 6000 ? pdfText.substring(0, 6000) : pdfText;
 
-  const prompt = `Based on the following document, generate exactly ${numQuestions} multiple choice quiz questions with ${difficulty} difficulty.
+  const prompt = `Based on this document, generate exactly ${numQuestions} UNIQUE multiple choice questions with ${difficulty} difficulty.
+
+STRICT RULES:
+- Every question MUST cover a DIFFERENT concept from the document
+- No duplicate or similar questions
+- 4 real meaningful answer choices per question
+- correctAnswer is index 0-3
 
 DOCUMENT:
 """
 ${truncatedText}
 """
 
-IMPORTANT: Return ONLY a valid JSON array. No markdown, no explanation text.
-
-Each question must follow this EXACT format:
+Return ONLY a JSON array:
 [
   {
-    "question": "What is discussed in the document?",
+    "question": "Specific question?",
     "options": ["Real answer 1", "Real answer 2", "Real answer 3", "Real answer 4"],
     "correctAnswer": 0,
-    "explanation": "Brief explanation here.",
+    "explanation": "Brief explanation",
     "difficulty": "${difficulty}"
   }
-]
-
-Rules:
-- options must have exactly 4 real meaningful answer choices
-- correctAnswer is the index (0, 1, 2, or 3) of the correct option
-- Do NOT use placeholder text like "Option A" or "Choice 1"`;
+]`;
 
   const response = await client.chat.completions.create({
-    model: 'llama-3.1-8b-instant',
+    model: 'llama-3.3-70b-versatile',
     messages: [{ role: 'user', content: prompt }],
-    temperature: 0.5,
+    temperature: 0.8,
     max_tokens: 4000,
   });
 
