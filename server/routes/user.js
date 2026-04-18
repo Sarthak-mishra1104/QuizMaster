@@ -32,6 +32,24 @@ router.put('/profile', authenticate, async (req, res) => {
   }
 });
 
+// Update user role
+router.put('/role', authenticate, async (req, res) => {
+  const { role, grade, subject } = req.body;
+  try {
+    if (!['teacher', 'student', 'player'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+    const update = { role };
+    if (grade) update.grade = grade;
+    if (subject) update.subject = subject;
+
+    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select('-__v -googleId');
+    res.json({ user });
+  } catch {
+    res.status(500).json({ error: 'Failed to update role' });
+  }
+});
+
 // Get user history
 router.get('/history', authenticate, async (req, res) => {
   try {

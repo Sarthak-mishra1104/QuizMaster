@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true },
   avatar: { type: String, default: '' },
   bio: { type: String, default: '' },
+  role: { type: String, enum: ['teacher', 'student', 'player', null], default: null },
+  grade: { type: String, default: '' }, // For students
+  subject: { type: String, default: '' }, // For students
   socialLinks: {
     github: { type: String, default: '' },
     linkedin: { type: String, default: '' },
@@ -35,7 +38,6 @@ const userSchema = new mongoose.Schema({
   lastLogin: { type: Date, default: Date.now },
 }, { timestamps: true });
 
-// Virtual: win rate
 userSchema.virtual('winRate').get(function () {
   if (this.stats.totalGames === 0) return 0;
   return Math.round((this.stats.totalWins / this.stats.totalGames) * 100);

@@ -1,6 +1,3 @@
-/**
- * AuthContext - Global user authentication state
- */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 
@@ -30,10 +27,9 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []); // eslint-disable-line
+  }, []);
 
   useEffect(() => {
-    // Handle OAuth callback
     const params = new URLSearchParams(window.location.search);
     const callbackToken = params.get('token');
     const callbackUserId = params.get('userId');
@@ -46,7 +42,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       verify();
     }
-  }, []); // eslint-disable-line
+  }, []);
 
   const logout = useCallback(async () => {
     try { await api.post('/auth/logout'); } catch {}
@@ -64,8 +60,15 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => ({ ...prev, ...updates }));
   };
 
+  // Check if user needs role selection
+  const needsRoleSelection = user && !user.role;
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, loginWithGoogle, logout, updateUser, verify }}>
+    <AuthContext.Provider value={{
+      user, token, loading,
+      loginWithGoogle, logout, updateUser, verify,
+      needsRoleSelection,
+    }}>
       {children}
     </AuthContext.Provider>
   );
