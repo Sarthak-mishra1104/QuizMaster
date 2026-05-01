@@ -1,0 +1,63 @@
+.student-welcome {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  gap: 24px;
+}
+
+.student-join-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 36px;
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 40px;
+}
+
+.student-join-left { display: flex; flex-direction: column; }
+
+.join-code-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 2px solid var(--blue-200);
+  border-radius: var(--radius-lg);
+  background: var(--blue-50);
+  transition: border-color var(--transition);
+}
+.join-code-input:focus-within {
+  border-color: var(--blue-500);
+  background: white;
+}
+
+.student-join-right {
+  display: flex;
+  align-items: center;
+}
+
+.join-tip {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  border: 1px solid var(--gray-200);
+  width: 100%;
+}
+.join-tip h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .student-join-card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .student-welcome { flex-direction: column; }
+}

@@ -1,0 +1,121 @@
+.student-setup-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 84px 24px 40px;
+}
+
+.student-setup-container {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  width: 100%;
+  max-width: 640px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-200);
+}
+
+.student-setup-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.student-setup-emoji {
+  font-size: 3.5rem;
+  margin-bottom: 12px;
+}
+.student-setup-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+.student-setup-header p {
+  color: var(--gray-500);
+  font-size: 0.95rem;
+}
+
+.setup-section {
+  margin-bottom: 28px;
+}
+.setup-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grade-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.grade-chip {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--gray-200);
+  background: white;
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.grade-chip:hover {
+  border-color: var(--blue-400);
+  background: var(--blue-50);
+  color: var(--blue-700);
+}
+.grade-chip.selected {
+  border-color: var(--blue-500);
+  background: var(--blue-500);
+  color: white;
+}
+
+.subject-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.subject-chip {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--gray-200);
+  background: white;
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.subject-chip:hover {
+  border-color: var(--blue-400);
+  background: var(--blue-50);
+  color: var(--blue-700);
+}
+.subject-chip.selected {
+  border-color: var(--blue-500);
+  background: var(--blue-500);
+  color: white;
+}
+
+.setup-summary {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: var(--blue-50);
+  border-radius: var(--radius);
+  border: 1px solid var(--blue-200);
+  margin-top: 16px;
+}
+
+@media (max-width: 480px) {
+  .student-setup-container { padding: 28px 20px; }
+}

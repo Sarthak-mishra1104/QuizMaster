@@ -15,6 +15,8 @@ import Profile from './pages/Profile';
 import About from './pages/About';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherCreateQuiz from './pages/TeacherCreateQuiz';
+import StudentSetup from './pages/StudentSetup';
+import StudentDashboard from './pages/StudentDashboard';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -81,9 +83,9 @@ const AppRoutes = () => {
         <Route path="/teacher/dashboard" element={<RoleRoute><TeacherDashboard /></RoleRoute>} />
         <Route path="/teacher/create" element={<RoleRoute><TeacherCreateQuiz /></RoleRoute>} />
 
-        {/* Student routes - coming soon */}
-        <Route path="/student/setup" element={<RoleRoute><Dashboard /></RoleRoute>} />
-
+        {/* Student routes */}
+        <Route path="/student/setup" element={<RoleRoute><StudentSetup /></RoleRoute>} />
+        <Route path="/student/dashboard" element={<RoleRoute><StudentDashboard /></RoleRoute>} />
         {/* 404 */}
         <Route path="*" element={
           <div style={{
