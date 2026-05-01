@@ -13,6 +13,8 @@ import Results from './pages/Results';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
 import About from './pages/About';
+import TeacherDashboard from './pages/TeacherDashboard';
+import TeacherCreateQuiz from './pages/TeacherCreateQuiz';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -74,8 +76,10 @@ const AppRoutes = () => {
         <Route path="/leaderboard" element={<RoleRoute><Leaderboard /></RoleRoute>} />
         <Route path="/profile" element={<RoleRoute><Profile /></RoleRoute>} />
 
-        {/* Teacher routes - coming soon */}
-        <Route path="/teacher/dashboard" element={<RoleRoute><Dashboard /></RoleRoute>} />
+       
+        {/* Teacher routes */}
+        <Route path="/teacher/dashboard" element={<RoleRoute><TeacherDashboard /></RoleRoute>} />
+        <Route path="/teacher/create" element={<RoleRoute><TeacherCreateQuiz /></RoleRoute>} />
 
         {/* Student routes - coming soon */}
         <Route path="/student/setup" element={<RoleRoute><Dashboard /></RoleRoute>} />
