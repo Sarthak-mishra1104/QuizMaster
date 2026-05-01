@@ -48,7 +48,8 @@ const roomSchema = new mongoose.Schema({
     difficulty: { type: String, enum: ['easy', 'medium', 'hard', 'mixed'], default: 'medium' },
     mode: { type: String, enum: ['topic', 'pdf'], default: 'topic' },
     gameMode: { type: String, enum: ['all-answer', 'turn-based'], default: 'all-answer' },
-    maxPlayers: { type: Number, default: 4, min: 2, max: 4 },
+    maxPlayers: { type: Number, default: 4, min: 1, max: 50 },
+   
   },
   status: {
     type: String,

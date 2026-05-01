@@ -1,10 +1,7 @@
-/**
- * Navbar - Top navigation bar
- */
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Trophy, Home, User, LogOut, Menu, X, Zap } from 'lucide-react';
+import { Trophy, Home, User, LogOut, Menu, X, Zap, BookOpen, GraduationCap, Gamepad2, RefreshCw } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -20,18 +17,55 @@ const Navbar = () => {
     setProfileOpen(false);
   };
 
-  const navLinks = [
-    { to: '/dashboard', label: 'Home', icon: <Home size={16} /> },
-    { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={16} /> },
-    { to: '/about', label: 'About', icon: <User size={16} /> },
-  ];
+  const handleSwitchRole = () => {
+    // Reset role and go to role selection
+    navigate('/role-select');
+    setProfileOpen(false);
+  };
+
+  // Different nav links based on role
+  const getNavLinks = () => {
+    if (!user) return [];
+
+    if (user.role === 'teacher') {
+      return [
+        { to: '/teacher/dashboard', label: 'Dashboard', icon: <Home size={16} /> },
+        { to: '/teacher/create', label: 'Create Quiz', icon: <BookOpen size={16} /> },
+        { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={16} /> },
+      ];
+    }
+
+    if (user.role === 'student') {
+      return [
+        { to: '/student/dashboard', label: 'Dashboard', icon: <Home size={16} /> },
+        { to: '/student/setup', label: 'Quiz Options', icon: <GraduationCap size={16} /> },
+        { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={16} /> },
+      ];
+    }
+
+    // Player / default
+    return [
+      { to: '/dashboard', label: 'Home', icon: <Home size={16} /> },
+      { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={16} /> },
+    ];
+  };
+
+  const getRoleLabel = () => {
+    if (user?.role === 'teacher') return { emoji: '👨‍🏫', label: 'Teacher' };
+    if (user?.role === 'student') return { emoji: '🎓', label: 'Student' };
+    if (user?.role === 'player') return { emoji: '🎮', label: 'Player' };
+    return null;
+  };
+
+  const navLinks = getNavLinks();
+  const roleInfo = getRoleLabel();
   const isActive = (path) => location.pathname === path;
 
   return (
     <nav className="navbar">
       <div className="navbar-inner">
         {/* Logo */}
-        <Link to={user ? '/dashboard' : '/'} className="navbar-logo">
+        <Link to={user ? (user.role === 'teacher' ? '/teacher/dashboard' : user.role === 'student' ? '/student/dashboard' : '/dashboard') : '/'} className="navbar-logo">
           <div className="logo-icon">
             <Zap size={20} fill="white" />
           </div>
@@ -69,9 +103,16 @@ const Navbar = () => {
                     {user.name?.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span className="hide-mobile" style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--gray-700)' }}>
-                  {user.name?.split(' ')[0]}
-                </span>
+                <div className="hide-mobile" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--gray-700)', lineHeight: 1.2 }}>
+                    {user.name?.split(' ')[0]}
+                  </span>
+                  {roleInfo && (
+                    <span style={{ fontSize: '0.72rem', color: 'var(--gray-400)', lineHeight: 1.2 }}>
+                      {roleInfo.emoji} {roleInfo.label}
+                    </span>
+                  )}
+                </div>
               </button>
 
               {profileOpen && (
@@ -81,11 +122,20 @@ const Navbar = () => {
                     <div className="dropdown-header">
                       <span style={{ fontWeight: 700, color: 'var(--gray-900)' }}>{user.name}</span>
                       <span style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>{user.email}</span>
+                      {roleInfo && (
+                        <span style={{ fontSize: '0.78rem', color: 'var(--blue-600)', fontWeight: 600, marginTop: 2 }}>
+                          {roleInfo.emoji} {roleInfo.label} Mode
+                        </span>
+                      )}
                     </div>
                     <div className="dropdown-divider" />
                     <Link to="/profile" className="dropdown-item" onClick={() => setProfileOpen(false)}>
                       <User size={15} /> My Profile
                     </Link>
+                    <button className="dropdown-item" onClick={handleSwitchRole}>
+                      <RefreshCw size={15} /> Switch Role
+                    </button>
+                    <div className="dropdown-divider" />
                     <button className="dropdown-item danger" onClick={handleLogout}>
                       <LogOut size={15} /> Sign Out
                     </button>
@@ -119,6 +169,10 @@ const Navbar = () => {
               {link.icon} {link.label}
             </Link>
           ))}
+          <div style={{ height: 1, background: 'var(--gray-200)', margin: '8px 0' }} />
+          <button className="mobile-nav-link" onClick={handleSwitchRole} style={{ border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'var(--font-main)', width: '100%', textAlign: 'left' }}>
+            <RefreshCw size={16} /> Switch Role
+          </button>
         </div>
       )}
     </nav>
