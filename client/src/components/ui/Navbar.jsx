@@ -28,25 +28,29 @@ const Navbar = () => {
     if (!user) return [];
 
     if (user.role === 'teacher') {
-      return [
+     return [
         { to: '/teacher/dashboard', label: 'Dashboard', icon: <Home size={16} /> },
         { to: '/teacher/create', label: 'Create Quiz', icon: <BookOpen size={16} /> },
         { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={16} /> },
+        { to: '/about', label: 'About', icon: <User size={16} /> },
       ];
     }
 
     if (user.role === 'student') {
-      return [
+     return [
         { to: '/student/dashboard', label: 'Dashboard', icon: <Home size={16} /> },
         { to: '/student/setup', label: 'Quiz Options', icon: <GraduationCap size={16} /> },
         { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={16} /> },
+        { to: '/about', label: 'About', icon: <User size={16} /> },
       ];
     }
 
     // Player / default
+   // Player / default
     return [
       { to: '/dashboard', label: 'Home', icon: <Home size={16} /> },
       { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={16} /> },
+      { to: '/about', label: 'About', icon: <User size={16} /> },
     ];
   };
 
