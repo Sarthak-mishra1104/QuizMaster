@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Edit3, Save, X, Github, Linkedin, Twitter,
-  Globe, BookOpen, Trophy, Target, Zap, BarChart2,
+  Globe, BookOpen, Trophy, Target, Zap, BarChart2, RefreshCw,
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -82,6 +82,15 @@ const Profile = () => {
     website: 'https://yourwebsite.com',
   };
 
+  const getRoleInfo = () => {
+    if (user?.role === 'teacher') return { emoji: '👨‍🏫', label: 'Teacher', color: 'badge-blue' };
+    if (user?.role === 'student') return { emoji: '🎓', label: 'Student', color: 'badge-green' };
+    if (user?.role === 'player') return { emoji: '🎮', label: 'Player', color: 'badge-yellow' };
+    return null;
+  };
+
+  const roleInfo = getRoleInfo();
+
   return (
     <div className="page">
       <div className="container-md">
@@ -112,7 +121,17 @@ const Profile = () => {
               )}
               <p className="profile-email">{user?.email}</p>
               <div className="profile-badges">
-                <span className="badge badge-blue">
+                {/* Role badge */}
+                {roleInfo && (
+                  <span className={`badge ${roleInfo.color}`}>
+                    {roleInfo.emoji} {roleInfo.label}
+                  </span>
+                )}
+                {/* Grade & Subject for students */}
+                {user?.grade && <span className="badge badge-blue">📚 {user.grade}</span>}
+                {user?.subject && <span className="badge badge-blue">📖 {user.subject}</span>}
+                {/* Stats badges */}
+                <span className="badge badge-gray">
                   🎮 {user?.stats?.totalGames || 0} Games
                 </span>
                 {user?.stats?.totalWins > 0 && (
@@ -135,9 +154,14 @@ const Profile = () => {
                   </button>
                 </>
               ) : (
-                <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>
-                  <Edit3 size={15} /> Edit Profile
-                </button>
+                <>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>
+                    <Edit3 size={15} /> Edit Profile
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => navigate('/role-select')}>
+                    <RefreshCw size={15} /> Switch Role
+                  </button>
+                </>
               )}
             </div>
           </div>
