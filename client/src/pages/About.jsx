@@ -62,12 +62,12 @@ const About = () => {
             <h2 style={{ margin: 0 }}>What QuizMaster AI Offers</h2>
           </div>
           <div style={{ padding: '20px 28px' }}>
-            {features.map(([icon, title, desc], i) => (
+            {features.map((feature, i) => (
               <div key={i} className="feature-row">
-                <div className="feature-row-icon">{icon}</div>
+                <div className="feature-row-icon">{feature.icon}</div>
                 <div>
-                  <div style={{ fontWeight: 700, color: 'var(--gray-900)', marginBottom: 2 }}>{title}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{desc}</div>
+                  <div style={{ fontWeight: 700, color: 'var(--gray-900)', marginBottom: 2 }}>{feature.title}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{feature.desc}</div>
                 </div>
               </div>
             ))}
