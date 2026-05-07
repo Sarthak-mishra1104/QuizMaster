@@ -57,42 +57,6 @@ const parseAIResponse = (content, expected) => {
   });
 };
 
-const generateBatch = async (client, topic, count, difficulty, existingQuestions = []) => {
-  const existingList = existingQuestions.length > 0
-    ? `\n\nDO NOT REPEAT THESE QUESTIONS:\n${existingQuestions.map((q, i) => `${i + 1}. ${q.question}`).join('\n')}`
-    : '';
-
-  const prompt = `Generate exactly ${count} UNIQUE multiple choice questions about "${topic}" with ${difficulty} difficulty.
-
-STRICT RULES:
-- Every question MUST be completely different from others
-- No similar or rephrased questions
-- Cover different aspects and subtopics of "${topic}"
-- Each question tests a DIFFERENT concept
-- 4 real answer choices per question (NOT "Option A", "Option B" etc)
-- correctAnswer is index 0-3${existingList}
-
-Return ONLY a JSON array:
-[
-  {
-    "question": "Specific unique question?",
-    "options": ["Real answer 1", "Real answer 2", "Real answer 3", "Real answer 4"],
-    "correctAnswer": 0,
-    "explanation": "Brief explanation",
-    "difficulty": "${difficulty}"
-  }
-]`;
-
-  const response = await client.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.9,
-    max_tokens: 4000,
-  });
-
-  return response.choices[0].message.content;
-};
-
 const similarity = (str1, str2) => {
   const s1 = str1.toLowerCase().trim();
   const s2 = str2.toLowerCase().trim();
@@ -102,6 +66,50 @@ const similarity = (str1, str2) => {
   const intersection = new Set([...words1].filter(w => words2.has(w)));
   const union = new Set([...words1, ...words2]);
   return intersection.size / union.size;
+};
+
+const difficultyGuide = {
+  easy: 'basic definitions, simple concepts, beginner level only',
+  medium: 'application of concepts, moderate complexity, intermediate level only',
+  hard: 'advanced analysis, complex scenarios, expert level only',
+  mixed: 'mix of basic, intermediate and advanced concepts',
+};
+
+const generateBatch = async (client, topic, count, difficulty, existingQuestions = []) => {
+  const existingList = existingQuestions.length > 0
+    ? `\n\nDO NOT REPEAT OR REPHRASE ANY OF THESE QUESTIONS:\n${existingQuestions.map((q, i) => `${i + 1}. ${q.question}`).join('\n')}`
+    : '';
+
+  const prompt = `Generate exactly ${count} UNIQUE multiple choice questions about "${topic}".
+Difficulty: ${difficulty} — ${difficultyGuide[difficulty] || difficultyGuide.medium}
+
+STRICT RULES:
+- Questions MUST match ${difficulty} difficulty level exactly
+- Every question MUST test a completely DIFFERENT concept
+- No duplicate, similar or rephrased questions allowed
+- 4 real specific answer choices per question
+- Do NOT use "Option A", "Choice 1" or placeholder options
+- correctAnswer is index 0-3${existingList}
+
+Return ONLY a valid JSON array:
+[
+  {
+    "question": "Specific unique question testing one distinct concept?",
+    "options": ["Real answer 1", "Real answer 2", "Real answer 3", "Real answer 4"],
+    "correctAnswer": 0,
+    "explanation": "Brief explanation of why this is correct",
+    "difficulty": "${difficulty === 'mixed' ? 'medium' : difficulty}"
+  }
+]`;
+
+  const response = await client.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.95,
+    max_tokens: 4000,
+  });
+
+  return response.choices[0].message.content;
 };
 
 async function generateFromTopic({ topic, numQuestions = 10, difficulty = 'medium' }) {
@@ -151,8 +159,9 @@ async function generateFromPDF({ pdfText, numQuestions = 10, difficulty = 'mediu
   const prompt = `Based on this document, generate exactly ${numQuestions} UNIQUE multiple choice questions with ${difficulty} difficulty.
 
 STRICT RULES:
-- Every question MUST cover a DIFFERENT concept from the document
-- No duplicate or similar questions
+- Every question MUST cover a completely DIFFERENT concept from the document
+- No duplicate, similar or rephrased questions
+- Questions must match ${difficulty} difficulty level
 - 4 real meaningful answer choices per question
 - correctAnswer is index 0-3
 
@@ -161,10 +170,10 @@ DOCUMENT:
 ${truncatedText}
 """
 
-Return ONLY a JSON array:
+Return ONLY a valid JSON array:
 [
   {
-    "question": "Specific question?",
+    "question": "Specific question about a distinct concept?",
     "options": ["Real answer 1", "Real answer 2", "Real answer 3", "Real answer 4"],
     "correctAnswer": 0,
     "explanation": "Brief explanation",

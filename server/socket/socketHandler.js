@@ -376,9 +376,9 @@ const finishGame = async (io, roomCode) => {
         const user = await User.findById(player.userId);
         if (!user) continue;
 
-        user.stats.totalGames += 1;
-        if (player.rank === 1) user.stats.totalWins += 1;
-        user.stats.totalScore += player.score;
+       user.stats.totalGames = (user.stats.totalGames || 0) + 1;
+        if (player.rank === 1) user.stats.totalWins = (user.stats.totalWins || 0) + 1;
+        user.stats.totalScore = (user.stats.totalScore || 0) + player.score;
 
         const prev = user.stats.avgAccuracy * (user.stats.totalGames - 1);
         user.stats.avgAccuracy = Math.round((prev + player.accuracy) / user.stats.totalGames);

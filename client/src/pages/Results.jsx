@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Trophy, RotateCcw, Home, ChevronDown, ChevronUp, Target, Zap } from 'lucide-react';
+
+import { Trophy, RotateCcw, Home, ChevronDown, ChevronUp, Target, Zap, X } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import './Results.css';
@@ -17,7 +18,12 @@ const Results = () => {
   const { user } = useAuth();
 
   const [data, setData] = useState(location.state || null);
-  const [showReview, setShowReview] = useState(false);
+ const [showReview, setShowReview] = useState(false);
+  const [showPlayAgain, setShowPlayAgain] = useState(false);
+  const [replayTopic, setReplayTopic] = useState(data?.topic || '');
+  const [replayNum, setReplayNum] = useState(10);
+  const [replayDiff, setReplayDiff] = useState('medium');
+  const [replayLoading, setReplayLoading] = useState(false);
   const [loading, setLoading] = useState(!location.state);
 
   useEffect(() => {
@@ -28,6 +34,35 @@ const Results = () => {
         .finally(() => setLoading(false));
     }
   }, [code, data, navigate]);
+
+const handlePlayAgain = async () => {
+    setReplayLoading(true);
+    try {
+      const roomRes = await api.post('/rooms/create', {
+        numQuestions: replayNum,
+        difficulty: replayDiff,
+        maxPlayers: 4,
+        gameMode: 'all-answer',
+      });
+      const newCode = roomRes.data.room.code;
+
+      await api.post('/quiz/generate/topic', {
+        topic: replayTopic.trim(),
+        numQuestions: replayNum,
+        difficulty: replayDiff,
+        roomCode: newCode,
+      });
+
+      toast.success('New game ready! 🎉');
+      navigate(`/lobby/${newCode}`);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create game');
+    } finally {
+      setReplayLoading(false);
+    }
+  };
+
+
 
   const getSortedRankings = (rankings) => {
     return [...rankings]
@@ -299,10 +334,80 @@ const Results = () => {
           <button className="btn btn-secondary btn-lg" onClick={() => navigate('/dashboard')}>
             <Home size={18} /> Back to Home
           </button>
-          <button className="btn btn-primary btn-lg" onClick={() => navigate('/dashboard')}>
+          <button className="btn btn-primary btn-lg" onClick={() => setShowPlayAgain(true)}>
             <RotateCcw size={18} /> Play Again
           </button>
         </div>
+
+        {/* Play Again Modal */}
+        {showPlayAgain && (
+          <div className="modal-overlay" onClick={() => setShowPlayAgain(false)}>
+            <div className="modal animate-slideUp" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2 className="modal-title">🎮 Play Again</h2>
+                <button className="btn btn-ghost btn-icon" onClick={() => setShowPlayAgain(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="input-group" style={{ marginBottom: 20 }}>
+                  <label className="input-label">Topic</label>
+                  <input
+                    className="input"
+                    value={replayTopic}
+                    onChange={e => setReplayTopic(e.target.value)}
+                    placeholder="Enter topic..."
+                  />
+                </div>
+                <div className="input-group" style={{ marginBottom: 20 }}>
+                  <label className="input-label">Number of Questions: <strong>{replayNum}</strong></label>
+                  <input
+                    type="range" min={5} max={30} step={5}
+                    value={replayNum}
+                    onChange={e => setReplayNum(Number(e.target.value))}
+                    style={{ width: '100%', accentColor: 'var(--blue-500)' }}
+                  />
+                </div>
+                <div className="input-group" style={{ marginBottom: 24 }}>
+                  <label className="input-label">Difficulty</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {['easy', 'medium', 'hard', 'mixed'].map(d => (
+                      <button
+                        key={d}
+                        onClick={() => setReplayDiff(d)}
+                        style={{
+                          padding: '10px',
+                          borderRadius: 'var(--radius)',
+                          border: replayDiff === d ? '2px solid var(--blue-500)' : '2px solid var(--gray-200)',
+                          background: replayDiff === d ? 'var(--blue-50)' : 'white',
+                          color: replayDiff === d ? 'var(--blue-700)' : 'var(--gray-600)',
+                          fontWeight: 600, cursor: 'pointer',
+                          fontFamily: 'var(--font-main)',
+                          fontSize: '0.85rem',
+                          textTransform: 'capitalize',
+                          transition: 'all var(--transition)',
+                        }}
+                      >
+                        {d === 'easy' ? '😊' : d === 'medium' ? '🎯' : d === 'hard' ? '🔥' : '🎲'} {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  className="btn btn-primary btn-full btn-lg"
+                  onClick={handlePlayAgain}
+                  disabled={replayLoading || !replayTopic.trim()}
+                >
+                  {replayLoading ? (
+                    <><div className="spinner spinner-sm" /> Creating game...</>
+                  ) : (
+                    <><RotateCcw size={18} /> Start New Game</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
