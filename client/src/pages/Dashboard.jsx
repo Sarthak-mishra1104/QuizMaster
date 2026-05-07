@@ -15,7 +15,7 @@ const Dashboard = () => {
   // Refresh user stats every time dashboard loads
   useEffect(() => {
     verify();
-  }, []);
+  }, []); // eslint-disable-line
 
   const firstName = user?.name?.split(' ')[0] || 'Player';
 
