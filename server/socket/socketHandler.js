@@ -373,39 +373,47 @@ const finishGame = async (io, roomCode) => {
     for (const player of rankings) {
       if (!player.userId) continue;
       try {
-        const user = await User.findById(player.userId);
-        if (!user) continue;
+       
+        // Use direct MongoDB update to avoid Mongoose nested object issues
+        const currentUser = await User.findById(player.userId);
+        if (!currentUser) continue;
 
-      // Initialize stats if not exist
-        if (!user.stats) user.stats = {};
-        
-        user.stats.totalGames = (user.stats.totalGames || 0) + 1;
-        if (player.rank === 1) user.stats.totalWins = (user.stats.totalWins || 0) + 1;
-        user.stats.totalScore = (user.stats.totalScore || 0) + (player.score || 0);
+        const totalGames = (currentUser.stats?.totalGames || 0) + 1;
+        const totalWins = (currentUser.stats?.totalWins || 0) + (player.rank === 1 ? 1 : 0);
+        const totalScore = (currentUser.stats?.totalScore || 0) + (player.score || 0);
+        const prevAvg = currentUser.stats?.avgAccuracy || 0;
+        const avgAccuracy = Math.round(((prevAvg * (totalGames - 1)) + (player.accuracy || 0)) / totalGames);
 
-        const prevGames = user.stats.totalGames - 1;
-        const prevAccuracy = user.stats.avgAccuracy || 0;
-        const prev = prevAccuracy * prevGames;
-        user.stats.avgAccuracy = Math.round((prev + (player.accuracy || 0)) / user.stats.totalGames);
-
-        // Mark stats as modified so mongoose saves it
-        user.markModified('stats');
-        user.markModified('quizHistory');
-
-        user.quizHistory.push({
+        const historyEntry = {
           roomId: freshRoom.code,
           topic: freshRoom.settings.topic || 'PDF Quiz',
-          score: player.score,
+          score: player.score || 0,
           totalQuestions: freshRoom.questions.length,
-          accuracy: player.accuracy,
-          rank: player.rank,
-        });
+          accuracy: player.accuracy || 0,
+          rank: player.rank || 1,
+          playedAt: new Date(),
+        };
 
-        if (user.quizHistory.length > 50) {
-          user.quizHistory = user.quizHistory.slice(-50);
-        }
+        await User.findByIdAndUpdate(
+          player.userId,
+          {
+            $set: {
+              'stats.totalGames': totalGames,
+              'stats.totalWins': totalWins,
+              'stats.totalScore': totalScore,
+              'stats.avgAccuracy': avgAccuracy,
+            },
+            $push: {
+              quizHistory: {
+                $each: [historyEntry],
+                $slice: -50,
+              },
+            },
+          },
+          { new: true }
+        );
 
-        await user.save();
+        console.log(`✅ Stats saved for ${currentUser.name}: games=${totalGames}, score=${totalScore}`);
       } catch (e) {
         console.error('Stats update error:', e);
       }
