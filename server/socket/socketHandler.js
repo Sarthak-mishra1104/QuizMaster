@@ -376,12 +376,21 @@ const finishGame = async (io, roomCode) => {
         const user = await User.findById(player.userId);
         if (!user) continue;
 
-       user.stats.totalGames = (user.stats.totalGames || 0) + 1;
+      // Initialize stats if not exist
+        if (!user.stats) user.stats = {};
+        
+        user.stats.totalGames = (user.stats.totalGames || 0) + 1;
         if (player.rank === 1) user.stats.totalWins = (user.stats.totalWins || 0) + 1;
-        user.stats.totalScore = (user.stats.totalScore || 0) + player.score;
+        user.stats.totalScore = (user.stats.totalScore || 0) + (player.score || 0);
 
-        const prev = user.stats.avgAccuracy * (user.stats.totalGames - 1);
-        user.stats.avgAccuracy = Math.round((prev + player.accuracy) / user.stats.totalGames);
+        const prevGames = user.stats.totalGames - 1;
+        const prevAccuracy = user.stats.avgAccuracy || 0;
+        const prev = prevAccuracy * prevGames;
+        user.stats.avgAccuracy = Math.round((prev + (player.accuracy || 0)) / user.stats.totalGames);
+
+        // Mark stats as modified so mongoose saves it
+        user.markModified('stats');
+        user.markModified('quizHistory');
 
         user.quizHistory.push({
           roomId: freshRoom.code,
