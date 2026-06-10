@@ -333,8 +333,14 @@ const moveToNextQuestion = async (io, room, roomCode) => {
 
 const finishGame = async (io, roomCode) => {
   try {
+    console.log(`🎮 finishGame called for room: ${roomCode}`);
+    // Always fetch fresh room from DB
     const freshRoom = await Room.findOne({ code: roomCode });
-    if (!freshRoom) return;
+    if (!freshRoom) {
+      console.log(`❌ Room not found: ${roomCode}`);
+      return;
+    }
+    console.log(`✅ Room found, players: ${freshRoom.players.length}`);
 
     // Recalculate scores from DB answers
     freshRoom.players.forEach(player => {
