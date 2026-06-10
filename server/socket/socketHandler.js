@@ -393,8 +393,7 @@ const finishGame = async (io, roomCode) => {
           rank: player.rank || 1,
           playedAt: new Date(),
         };
-
-        await User.findByIdAndUpdate(
+const updatedUser = await User.findByIdAndUpdate(
           player.userId,
           {
             $set: {
@@ -413,7 +412,11 @@ const finishGame = async (io, roomCode) => {
           { new: true }
         );
 
-        console.log(`✅ Stats saved for ${currentUser.name}: games=${totalGames}, score=${totalScore}`);
+        if (updatedUser) {
+          console.log(`✅ Stats saved for ${updatedUser.name}: games=${updatedUser.stats.totalGames}, score=${updatedUser.stats.totalScore}, accuracy=${updatedUser.stats.avgAccuracy}`);
+        } else {
+          console.log(`❌ Failed to update stats for userId: ${player.userId}`);
+        }
       } catch (e) {
         console.error('Stats update error:', e);
       }
