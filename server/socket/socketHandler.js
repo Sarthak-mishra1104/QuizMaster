@@ -332,6 +332,10 @@ const moveToNextQuestion = async (io, room, roomCode) => {
 };
 
 const finishGame = async (io, roomCode) => {
+  console.log('==============================');
+console.log('FINISH GAME STARTED');
+console.log('ROOM CODE:', roomCode);
+console.log('==============================');
   try {
     console.log(`🎮 finishGame called for room: ${roomCode}`);
     // Always fetch fresh room from DB
