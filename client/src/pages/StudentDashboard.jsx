@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { BookOpen, Trophy, Target, Zap, Hash, ArrowRight } from 'lucide-react';
+import { BookOpen, Trophy,Gamepad2, Target, Zap, Hash, ArrowRight } from 'lucide-react';
 import JoinRoomModal from '../components/game/JoinRoomModal';
 import './StudentDashboard.css';
 
@@ -58,7 +58,15 @@ const StudentDashboard = () => {
         {/* Join Quiz */}
         <div className="student-join-card animate-slideUp">
           <div className="student-join-left">
-            <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🎮</div>
+         <div
+  style={{
+    marginBottom: 12,
+    display: 'flex',
+    justifyContent: 'center'
+  }}
+>
+  <Gamepad2 size={40} />
+</div>
             <h2>Join a Quiz</h2>
             <p style={{ color: 'var(--gray-500)', marginBottom: 20 }}>
               Enter the room code shared by your teacher to join the quiz

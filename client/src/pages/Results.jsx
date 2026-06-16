@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-import { Trophy, RotateCcw, Home, ChevronDown, ChevronUp, Target, Zap, X } from 'lucide-react';
+import { Trophy, RotateCcw, Home, ChevronDown, ChevronUp,Gamepad2, Target, Zap, X } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import './Results.css';
@@ -344,7 +344,18 @@ const handlePlayAgain = async () => {
           <div className="modal-overlay" onClick={() => setShowPlayAgain(false)}>
             <div className="modal animate-slideUp" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
               <div className="modal-header">
-                <h2 className="modal-title">🎮 Play Again</h2>
+                <h2
+  className="modal-title"
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px'
+  }}
+>
+  <Gamepad2 size={22} />
+  Play Again
+</h2>
                 <button className="btn btn-ghost btn-icon" onClick={() => setShowPlayAgain(false)}>
                   <X size={20} />
                 </button>

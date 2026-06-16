@@ -8,7 +8,9 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('qm_token'));
   const [loading, setLoading] = useState(true);
 
+  
   const verify = useCallback(async (t) => {
+    console.time('AUTH_VERIFY');
     const tkn = t || token;
     if (!tkn) { setLoading(false); return; }
 
@@ -25,6 +27,7 @@ export const AuthProvider = ({ children }) => {
     } catch {
       logout();
     } finally {
+      console.timeEnd('AUTH_VERIFY');
       setLoading(false);
     }
   }, []);

@@ -5,6 +5,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { ChevronRight, Hash, ArrowRight } from 'lucide-react';
 import './StudentSetup.css';
+import { Gamepad2 } from 'lucide-react';
 
 const GRADES = [
   'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10',
@@ -166,7 +167,9 @@ const StudentSetup = () => {
         {step === 2 && (
           <>
             <div className="student-setup-header">
-              <div className="student-setup-emoji">🎮</div>
+             <div className="student-setup-emoji">
+  <Gamepad2 size={48} />
+</div>
               <h1>Quiz Options</h1>
               <p>How do you want to play?</p>
               <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 10 }}>

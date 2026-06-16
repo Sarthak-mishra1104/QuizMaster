@@ -18,6 +18,7 @@ import TeacherCreateQuiz from './pages/TeacherCreateQuiz';
 import StudentSetup from './pages/StudentSetup';
 import StudentDashboard from './pages/StudentDashboard';
 import './index.css';
+import { Gamepad2 } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -92,7 +93,14 @@ const AppRoutes = () => {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             justifyContent: 'center', minHeight: '100vh', gap: 16, padding: 24,
           }}>
-            <div style={{ fontSize: '5rem' }}>🎮</div>
+            <div
+  style={{
+    display: 'flex',
+    justifyContent: 'center'
+  }}
+>
+  <Gamepad2 size={80} />
+</div>
             <h1 style={{ fontSize: '2rem' }}>Page Not Found</h1>
             <p style={{ color: 'var(--gray-500)' }}>This page doesn't exist.</p>
             <a href="/dashboard" className="btn btn-primary">Back to Home</a>

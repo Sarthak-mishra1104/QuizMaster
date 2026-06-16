@@ -1,3 +1,4 @@
+import { BookOpen, GraduationCap, Gamepad2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -82,12 +83,30 @@ const Profile = () => {
     website: 'https://yourwebsite.com',
   };
 
-  const getRoleInfo = () => {
-    if (user?.role === 'teacher') return { emoji: '👨‍🏫', label: 'Teacher', color: 'badge-blue' };
-    if (user?.role === 'student') return { emoji: '🎓', label: 'Student', color: 'badge-green' };
-    if (user?.role === 'player') return { emoji: '🎮', label: 'Player', color: 'badge-yellow' };
-    return null;
-  };
+ const getRoleInfo = () => {
+  if (user?.role === 'teacher')
+    return {
+      icon: BookOpen,
+      label: 'Teacher',
+      color: 'badge-blue'
+    };
+
+  if (user?.role === 'student')
+    return {
+      icon: GraduationCap,
+      label: 'Student',
+      color: 'badge-green'
+    };
+
+  if (user?.role === 'player')
+    return {
+      icon: Gamepad2,
+      label: 'Player',
+      color: 'badge-yellow'
+    };
+
+  return null;
+};
 
   const roleInfo = getRoleInfo();
 
@@ -122,23 +141,57 @@ const Profile = () => {
               <p className="profile-email">{user?.email}</p>
               <div className="profile-badges">
                 {/* Role badge */}
-                {roleInfo && (
-                  <span className={`badge ${roleInfo.color}`}>
-                    {roleInfo.emoji} {roleInfo.label}
-                  </span>
-                )}
+              {roleInfo && (
+  <span
+    className={`badge ${roleInfo.color}`}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    }}
+  >
+    {React.createElement(roleInfo.icon, { size: 14 })}
+    {roleInfo.label}
+  </span>
+)}
                 {/* Grade & Subject for students */}
-                {user?.grade && <span className="badge badge-blue">📚 {user.grade}</span>}
-                {user?.subject && <span className="badge badge-blue">📖 {user.subject}</span>}
+               {user?.grade && (
+  <span
+    className="badge badge-blue"
+    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+  >
+    <BookOpen size={14} />
+    {user.grade}
+  </span>
+)}
+
+{user?.subject && (
+  <span
+    className="badge badge-blue"
+    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+  >
+    <BookOpen size={14} />
+    {user.subject}
+  </span>
+)}
                 {/* Stats badges */}
-                <span className="badge badge-gray">
-                  🎮 {user?.stats?.totalGames || 0} Games
-                </span>
-                {user?.stats?.totalWins > 0 && (
-                  <span className="badge badge-yellow">
-                    🏆 {user?.stats?.totalWins} Wins
-                  </span>
-                )}
+               <span
+  className="badge badge-gray"
+  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+>
+  <Gamepad2 size={14} />
+  {user?.stats?.totalGames || 0} Games
+</span>
+
+{user?.stats?.totalWins > 0 && (
+  <span
+    className="badge badge-yellow"
+    style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+  >
+    <Trophy size={14} />
+    {user?.stats?.totalWins} Wins
+  </span>
+)}
               </div>
             </div>
 
@@ -239,7 +292,15 @@ const Profile = () => {
 
           {!user?.quizHistory?.length ? (
             <div className="history-empty">
-              <div style={{ fontSize: '3rem', marginBottom: 12 }}>🎮</div>
+            <div
+  style={{
+    marginBottom: 12,
+    display: 'flex',
+    justifyContent: 'center'
+  }}
+>
+  <Gamepad2 size={48} />
+</div>
               <p>No games played yet!</p>
               <button className="btn btn-primary btn-sm mt-4" onClick={() => navigate('/dashboard')}>
                 Play Your First Quiz
