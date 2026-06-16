@@ -377,6 +377,12 @@ const finishGame = async (io, roomCode) => {
     await freshRoom.save();
 
     for (const player of rankings) {
+      console.log('PLAYER DEBUG:', {
+  userId: player.userId,
+  name: player.name,
+  score: player.score,
+  rank: player.rank
+});
       if (!player.userId) continue;
       try {
        
