@@ -54,12 +54,18 @@ const Navbar = () => {
     ];
   };
 
-  const getRoleLabel = () => {
-    if (user?.role === 'teacher') return { emoji: '👨‍🏫', label: 'Teacher' };
-    if (user?.role === 'student') return { emoji: '🎓', label: 'Student' };
-    if (user?.role === 'player') return { emoji: '🎮', label: 'Player' };
-    return null;
-  };
+const getRoleLabel = () => {
+  if (user?.role === 'teacher')
+    return { icon: BookOpen, label: 'Teacher' };
+
+  if (user?.role === 'student')
+    return { icon: GraduationCap, label: 'Student' };
+
+  if (user?.role === 'player')
+    return { icon: Gamepad2, label: 'Player' };
+
+  return null;
+};
 
   const navLinks = getNavLinks();
   const roleInfo = getRoleLabel();
@@ -111,11 +117,21 @@ const Navbar = () => {
                   <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--gray-700)', lineHeight: 1.2 }}>
                     {user.name?.split(' ')[0]}
                   </span>
-                  {roleInfo && (
-                    <span style={{ fontSize: '0.72rem', color: 'var(--gray-400)', lineHeight: 1.2 }}>
-                      {roleInfo.emoji} {roleInfo.label}
-                    </span>
-                  )}
+                 {roleInfo && (
+  <span
+    style={{
+      fontSize: '0.72rem',
+      color: 'var(--gray-400)',
+      lineHeight: 1.2,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px'
+    }}
+  >
+    {React.createElement(roleInfo.icon, { size: 14 })}
+    {roleInfo.label}
+  </span>
+)}
                 </div>
               </button>
 
