@@ -1,42 +1,58 @@
+import { BookOpen, GraduationCap, Gamepad2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import './RoleSelect.css';
-
 const roles = [
-  {
-    id: 'teacher',
-    emoji: '👨‍🏫',
-    title: 'Teacher',
-    subtitle: 'Host Mode',
-    description: 'Create AI-powered quizzes, review questions before publishing, and monitor students in real-time.',
-    color: '#4169E1',
-    bg: '#eff4ff',
-    features: ['Generate AI quiz questions', 'Review & edit before publish', 'Share quiz code instantly', 'Monitor 40+ students live'],
-  },
-  {
-    id: 'student',
-    emoji: '🎓',
-    title: 'Student',
-    subtitle: 'Learn Mode',
-    description: 'Join quizzes using a room code, select your grade and subject, and track your performance.',
-    color: '#10b981',
-    bg: '#f0fdf4',
-    features: ['Join with quiz code', 'Select grade & subject', 'Real-time leaderboard', 'Track your accuracy'],
-  },
-  {
-    id: 'player',
-    emoji: '🎮',
-    title: 'Quick Play',
-    subtitle: 'Play Mode',
-    description: 'Jump into a fun AI-generated quiz on any topic. Play solo or challenge friends in real-time.',
-    color: '#f59e0b',
-    bg: '#fffbeb',
-    features: ['Quiz on any topic', 'Multiplayer rooms', 'Speed bonus scoring', 'Global leaderboard'],
-  },
+{
+id: 'teacher',
+icon: BookOpen,
+title: 'Teacher',
+subtitle: 'Host Mode',
+description: 'Create AI-powered quizzes, review questions before publishing, and monitor students in real-time.',
+color: '#4169E1',
+bg: '#eff4ff',
+features: [
+'Generate AI quiz questions',
+'Review & edit before publish',
+'Share quiz code instantly',
+'Monitor 40+ students live'
+],
+},
+{
+id: 'student',
+icon: GraduationCap,
+title: 'Student',
+subtitle: 'Learn Mode',
+description: 'Join quizzes using a room code, select your grade and subject, and track your performance.',
+color: '#10b981',
+bg: '#f0fdf4',
+features: [
+'Join with quiz code',
+'Select grade & subject',
+'Real-time leaderboard',
+'Track your accuracy'
+],
+},
+{
+id: 'player',
+icon: Gamepad2,
+title: 'Quick Play',
+subtitle: 'Play Mode',
+description: 'Jump into a fun AI-generated quiz on any topic. Play solo or challenge friends in real-time.',
+color: '#f59e0b',
+bg: '#fffbeb',
+features: [
+'Quiz on any topic',
+'Multiplayer rooms',
+'Speed bonus scoring',
+'Global leaderboard'
+],
+},
 ];
+
 
 const RoleSelect = () => {
   const { user, updateUser } = useAuth();
@@ -88,7 +104,9 @@ const RoleSelect = () => {
               style={{ '--role-color': role.color, '--role-bg': role.bg }}
               onClick={() => !loading && handleSelect(role.id)}
             >
-              <div className="role-card-icon">{role.emoji}</div>
+      <div className="role-card-icon">
+  <role.icon size={42} />
+</div>
               <div className="role-card-badge">{role.subtitle}</div>
               <h2 className="role-card-title">{role.title}</h2>
               <p className="role-card-desc">{role.description}</p>
