@@ -37,13 +37,17 @@ const calculateFinalRankings = (players) => {
       ? Math.round((correctAnswers / totalAnswers) * 100)
       : 0;
 
-    return {
-      ...player,
-      rank: index + 1,
-      accuracy,
-      correctAnswers,
-      totalAnswers,
-    };
+   return {
+  userId: player.userId,
+  name: player.name,
+  avatar: player.avatar,
+  score: player.score,
+  answers: player.answers,
+  rank: index + 1,
+  accuracy,
+  correctAnswers,
+  totalAnswers,
+};
   });
 };
 
