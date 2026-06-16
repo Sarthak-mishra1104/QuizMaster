@@ -2,7 +2,7 @@
  * QuizMaster AI - Main Server Entry Point
  * MERN Stack + Socket.io + AI Integration
  */
-
+console.log('SERVER VERSION TEST 12345');
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
