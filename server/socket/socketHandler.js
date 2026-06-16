@@ -312,6 +312,9 @@ const sendQuestion = (io, room, roomCode) => {
 };
 
 const moveToNextQuestion = async (io, room, roomCode) => {
+  console.log('MOVE TO NEXT QUESTION');
+console.log('Current Question:', room.currentQuestion);
+console.log('Room:', roomCode);
   try {
     const freshRoom = await Room.findOne({ code: roomCode });
     if (!freshRoom || freshRoom.status !== 'playing') return;
