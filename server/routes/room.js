@@ -65,7 +65,8 @@ router.post('/create', authenticate, async (req, res) => {
 router.get('/:code', authenticate, async (req, res) => {
   try {
     const room = await Room.findOne({ code: req.params.code.toUpperCase() })
-      .populate('hostId', 'name avatar');
+      .populate('hostId', 'name avatar')
+      .lean();
 
     if (!room) return res.status(404).json({ error: 'Room not found' });
 

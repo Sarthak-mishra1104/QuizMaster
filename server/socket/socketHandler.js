@@ -3,6 +3,7 @@ const User = require('../models/User');
 const { calculateFinalRankings } = require('../utils/roomUtils');
 
 const roomTimers = new Map();
+const finishingRooms = new Set();
 
 const calculatePoints = ({ isCorrect, timeTaken, timeLimit }) => {
   if (!isCorrect) return 0;
@@ -335,14 +336,24 @@ console.log('Room:', roomCode);
 };
 
 const finishGame = async (io, roomCode) => {
+
+  if (finishingRooms.has(roomCode)) {
+    console.log(`⚠️ finishGame already running for ${roomCode}`);
+    return;
+  }
+
+  finishingRooms.add(roomCode);
+
   console.log('==============================');
-console.log('FINISH GAME STARTED');
-console.log('ROOM CODE:', roomCode);
-console.log('==============================');
+  console.log('FINISH GAME STARTED');
+  console.log('ROOM CODE:', roomCode);
+  console.log('==============================');
+
   try {
     console.log(`🎮 finishGame called for room: ${roomCode}`);
-    // Always fetch fresh room from DB
+
     const freshRoom = await Room.findOne({ code: roomCode });
+
     if (!freshRoom) {
       console.log(`❌ Room not found: ${roomCode}`);
       return;
@@ -459,9 +470,11 @@ const updatedUser = await User.findByIdAndUpdate(
       })),
       topic: freshRoom.settings.topic,
     });
-  } catch (err) {
-    console.error('finishGame error:', err);
-  }
+ } catch (err) {
+  console.error('finishGame error:', err);
+} finally {
+  finishingRooms.delete(roomCode);
+}
 };
 
 const sanitizeRoom = (room, currentUserId) => ({

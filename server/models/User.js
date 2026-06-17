@@ -44,7 +44,7 @@ userSchema.virtual('winRate').get(function () {
 });
 
 userSchema.set('toJSON', { virtuals: true });
-
-userSchema.index({ 'stats.totalScore': -1 });
 userSchema.index({ 'stats.totalWins': -1 });
+userSchema.index({ 'stats.totalScore': -1 });
+
 module.exports = mongoose.model('User', userSchema);

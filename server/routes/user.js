@@ -9,7 +9,10 @@ const User = require('../models/User');
 // Get user profile
 router.get('/profile', authenticate, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-__v -googleId');
+    const user = await User.findById(req.user._id)
+      .select('-__v -googleId')
+      .lean();
+
     res.json({ user });
   } catch {
     res.status(500).json({ error: 'Failed to fetch profile' });
@@ -23,7 +26,14 @@ router.put('/profile', authenticate, async (req, res) => {
     const update = {};
     if (name) update.name = name.trim().substring(0, 50);
     if (bio !== undefined) update.bio = bio.substring(0, 300);
-    if (socialLinks) update.socialLinks = socialLinks;
+    if (socialLinks) {
+  update.socialLinks = {
+    github: socialLinks.github || '',
+    linkedin: socialLinks.linkedin || '',
+    twitter: socialLinks.twitter || '',
+    website: socialLinks.website || '',
+  };
+}
 
     const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select('-__v -googleId');
     res.json({ user });
@@ -43,7 +53,8 @@ router.put('/role', authenticate, async (req, res) => {
     if (grade) update.grade = grade;
     if (subject) update.subject = subject;
 
-    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select('-__v -googleId');
+    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select('-__v -googleId')
+    .lean();
     res.json({ user });
   } catch {
     res.status(500).json({ error: 'Failed to update role' });
@@ -53,9 +64,10 @@ router.put('/role', authenticate, async (req, res) => {
 // Get user history
 router.get('/history', authenticate, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('quizHistory stats');
+    const user = await User.findById(req.user._id).select('quizHistory stats')
+    .lean();
     res.json({
-      history: user.quizHistory.reverse().slice(0, 20),
+     history: [...user.quizHistory].reverse().slice(0, 20),
       stats: user.stats,
     });
   } catch {

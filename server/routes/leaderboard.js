@@ -10,8 +10,11 @@ router.get('/global', async (req, res) => {
   try {
     const users = await User.find({ 'stats.totalGames': { $gt: 0 } })
       .sort({ 'stats.totalScore': -1 })
-      .limit(50)
-      .select('name avatar stats');
+      .limit(100)
+    .select(
+  'name avatar stats.totalScore stats.totalGames stats.totalWins stats.avgAccuracy'
+)
+      .lean();
 
     const leaderboard = users.map((u, i) => ({
       rank: i + 1,
@@ -38,10 +41,12 @@ router.get('/weekly', async (req, res) => {
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
 
     // For simplicity, we query recent quiz history and aggregate
-    const users = await User.find({
-      'quizHistory.playedAt': { $gte: weekStart },
-    }).select('name avatar quizHistory stats');
-
+  const users = await User.find({
+  'quizHistory.playedAt': { $gte: weekStart },
+})
+.select('name avatar quizHistory stats')
+.limit(200)
+.lean();
     const weeklyData = users.map(u => {
       const weeklyEntries = u.quizHistory.filter(h => new Date(h.playedAt) >= weekStart);
       const weeklyScore = weeklyEntries.reduce((sum, h) => sum + h.score, 0);
