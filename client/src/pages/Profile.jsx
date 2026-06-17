@@ -2,14 +2,14 @@ import { BookOpen, GraduationCap, Gamepad2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import {
-  Edit3, Save, X, Github, Linkedin, Twitter,
-  Globe, BookOpen, Trophy, Target, Zap, BarChart2, RefreshCw,
-} from 'lucide-react';
+
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import './Profile.css';
-
+import {
+  Edit3, Save, X, Github, Linkedin, Twitter,
+  Globe, Trophy, Target, Zap, BarChart2, RefreshCw,
+} from 'lucide-react';
 const Profile = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
