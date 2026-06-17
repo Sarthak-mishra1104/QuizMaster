@@ -19,6 +19,8 @@ import StudentSetup from './pages/StudentSetup';
 import StudentDashboard from './pages/StudentDashboard';
 import './index.css';
 import { Gamepad2 } from 'lucide-react';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Terms from './pages/Terms';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -67,6 +69,8 @@ const AppRoutes = () => {
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/auth/callback" element={<Login />} />
         <Route path="/about" element={<About />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<Terms />} />
 
         {/* Role Selection - after login, before dashboard */}
         <Route path="/role-select" element={<ProtectedRoute><RoleSelect /></ProtectedRoute>} />

@@ -189,8 +189,67 @@
 }
 
 @media (max-width: 768px) {
-  .role-cards { grid-template-columns: 1fr; }
-}
-@media (max-width: 1024px) and (min-width: 769px) {
-  .role-cards { grid-template-columns: 1fr 1fr; }
+
+  .role-select-page {
+    padding: 70px 12px 20px;
+  }
+
+  .role-select-header {
+    margin-bottom: 24px;
+  }
+
+  .role-welcome-avatar {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 12px;
+  }
+
+  .role-select-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .role-select-header p {
+    font-size: 0.9rem;
+  }
+
+  .role-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .role-card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .role-card-icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+  }
+
+  .role-card-title {
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+  }
+
+  .role-card-desc {
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+    line-height: 1.45;
+  }
+
+  .role-card-features {
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .role-card-features li {
+    font-size: 0.75rem;
+  }
+
+  .role-card-btn {
+    padding: 10px;
+    font-size: 0.82rem;
+  }
 }
