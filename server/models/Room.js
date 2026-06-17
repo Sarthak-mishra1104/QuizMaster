@@ -68,4 +68,7 @@ const roomSchema = new mongoose.Schema({
 // Auto-expire rooms after 2 hours
 roomSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7200 });
 
+roomSchema.index({ hostId: 1 });
+roomSchema.index({ status: 1 });
+
 module.exports = mongoose.model('Room', roomSchema);

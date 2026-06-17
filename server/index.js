@@ -124,7 +124,11 @@ initializeSocket(io);
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/quizmaster';
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(MONGO_URI, {
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+})
   .then(() => {
     console.log('✅ MongoDB connected');
     server.listen(PORT, () => {
