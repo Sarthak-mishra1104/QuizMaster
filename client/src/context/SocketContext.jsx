@@ -35,10 +35,15 @@ export const SocketProvider = ({ children }) => {
       forceNew: true,
     });
 
-    socket.on('connect', () => {
-      console.log('Socket connected:', socket.id);
-      setConnected(true);
-    });
+  socket.on('connect', () => {
+  console.log('Socket connected:', socket.id);
+  setConnected(true);
+
+  // Helpful for reconnect debugging
+  if (socket.recovered) {
+    console.log('Socket session recovered');
+  }
+});
 
     socket.on('disconnect', (reason) => {
       console.log('Socket disconnected:', reason);

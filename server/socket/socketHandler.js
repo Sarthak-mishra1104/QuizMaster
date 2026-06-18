@@ -53,10 +53,21 @@ const initializeSocket = (io) => {
           p => p.userId?.toString() === socket.user._id.toString()
         );
 
-        if (existingIndex >= 0) {
-          room.players[existingIndex].socketId = socket.id;
-          room.players[existingIndex].isConnected = true;
-        } else {
+      if (existingIndex >= 0) {
+
+  const oldSocketId = room.players[existingIndex].socketId;
+
+  if (oldSocketId && oldSocketId !== socket.id) {
+    const oldSocket = io.sockets.sockets.get(oldSocketId);
+
+    if (oldSocket) {
+      oldSocket.leave(roomCode.toUpperCase());
+    }
+  }
+
+  room.players[existingIndex].socketId = socket.id;
+  room.players[existingIndex].isConnected = true;
+} else {
           if (room.players.length >= room.settings.maxPlayers) {
             return callback?.({ error: `Room is full (max ${room.settings.maxPlayers} players)` });
           }
@@ -295,6 +306,12 @@ const sendQuestion = (io, room, roomCode) => {
   const timer = setTimeout(async () => {
     try {
       const freshRoom = await Room.findOne({ code: roomCode });
+      const timer = roomTimers.get(roomCode);
+
+if (timer) {
+  clearTimeout(timer);
+  roomTimers.delete(roomCode);
+}
       if (freshRoom && freshRoom.status === 'playing') {
         io.to(roomCode).emit('question-timeout', {
           index: qIndex,
