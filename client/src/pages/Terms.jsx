@@ -140,8 +140,12 @@ const Terms = () => {
 
           <h2>Contact</h2>
           <p>
-            Questions regarding these Terms may be directed to Intellisys
-            Technologies through official support channels.
+            For questions regarding these Terms & Conditions, please contact:
+
+Email: quizmaster.ai.app@gmail.com
+
+Owner: Sarthak Mishra
+QuizMaster AI
           </p>
         </div>
       </div>

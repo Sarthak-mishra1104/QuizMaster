@@ -155,9 +155,11 @@ const PrivacyPolicy = () => {
 
           <h2>Contact Us</h2>
           <p>
-            For privacy-related questions, concerns, or data requests,
-            please contact Intellisys Technologies through the official
-            support channels provided within the application.
+           For privacy-related concerns, contact us at:
+quizmaster.ai.app@gmail.com
+
+Owner: Sarthak Mishra
+QuizMaster AI
           </p>
         </div>
       </div>
