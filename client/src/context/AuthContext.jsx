@@ -56,8 +56,11 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const loginWithGoogle = () => {
-    window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/google`;
-  };
+  window.open(
+    `${process.env.REACT_APP_API_URL || 'https://your-backend-url.com'}/api/auth/google`,
+    '_blank'
+  );
+};
 
   const updateUser = (updates) => {
     setUser(prev => ({ ...prev, ...updates }));

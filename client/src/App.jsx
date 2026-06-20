@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
@@ -119,7 +119,7 @@ function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <BrowserRouter>
+        <HashRouter>
           <AppRoutes />
           <Toaster
             position="top-right"
@@ -136,7 +136,7 @@ function App() {
               error: { iconTheme: { primary: '#ef4444', secondary: 'white' } },
             }}
           />
-        </BrowserRouter>
+        </HashRouter>
       </SocketProvider>
     </AuthProvider>
   );
