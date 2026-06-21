@@ -28,10 +28,16 @@ const { initializeSocket } = require('./socket/socketHandler');
 // Passport config
 require('./middleware/passport');
 
-const app = express();
-const server = http.createServer(app);
 
-// ─── Socket.io Setup ────────────────────────────────────────────────────────
+const server = http.createServer(app);
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'QuizMaster Backend Running'
+  });
+});
+
+const app = express();// ─── Socket.io Setup ────────────────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
