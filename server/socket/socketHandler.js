@@ -1,7 +1,7 @@
 const Room = require('../models/Room');
 const User = require('../models/User');
 const { calculateFinalRankings } = require('../utils/roomUtils');
-
+const gameCache = require('./gameCache');
 const roomTimers = new Map();
 const finishingRooms = new Set();
 
@@ -132,9 +132,12 @@ const initializeSocket = (io) => {
       }
     });
 
-    socket.on('submit-answer', async ({ roomCode, questionIndex, selectedOption, timeTaken }, callback) => {
-      try {
-        const room = await Room.findOne({ code: roomCode.toUpperCase() });
+   socket.on('submit-answer', async ({ roomCode, questionIndex, selectedOption, timeTaken }, callback) => {
+
+  const startTime = Date.now();   // 👈 YE LINE YAHAN ADD KARNI HAI
+
+  try {
+    const room = await Room.findOne({ code: roomCode.toUpperCase() });
         if (!room || room.status !== 'playing') return;
 
         const playerIndex = room.players.findIndex(
@@ -168,8 +171,8 @@ const initializeSocket = (io) => {
         });
         room.players[playerIndex].score += pointsEarned;
         room.players[playerIndex].socketId = socket.id;
-
-        await room.save();
+ await room.save();
+        
 
         // Send result immediately to answering player
         callback?.({
@@ -179,6 +182,7 @@ const initializeSocket = (io) => {
           pointsEarned,
           totalScore: room.players[playerIndex].score,
         });
+       
 
         // Broadcast updated scores to all
         const scores = room.players.map(p => ({

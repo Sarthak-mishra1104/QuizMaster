@@ -28,16 +28,10 @@ const { initializeSocket } = require('./socket/socketHandler');
 // Passport config
 require('./middleware/passport');
 
-
+const app = express();
 const server = http.createServer(app);
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    message: 'QuizMaster Backend Running'
-  });
-});
 
-const app = express();// ─── Socket.io Setup ────────────────────────────────────────────────────────
+// ─── Socket.io Setup ────────────────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
@@ -108,6 +102,23 @@ app.get('/api/health', (req, res) => {
     version: '1.0.0',
   });
 });
+
+app.use((req, res, next) => {
+  const start = Date.now();
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+
+    if (duration > 100) {
+      console.log(
+        `🐢 ${req.method} ${req.originalUrl} took ${duration}ms`
+      );
+    }
+  });
+
+  next();
+});
+
 
 // 404 handler
 app.use((req, res) => {

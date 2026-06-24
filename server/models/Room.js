@@ -71,4 +71,5 @@ roomSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7200 });
 roomSchema.index({ hostId: 1 });
 roomSchema.index({ status: 1 });
 
+
 module.exports = mongoose.model('Room', roomSchema);
