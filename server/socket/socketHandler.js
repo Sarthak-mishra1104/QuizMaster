@@ -173,6 +173,9 @@ const initializeSocket = (io) => {
         room.players[playerIndex].socketId = socket.id;
  await room.save();
         
+ console.log(
+  `Mongo save took ${Date.now() - startTime} ms`
+);
 
         // Send result immediately to answering player
         callback?.({

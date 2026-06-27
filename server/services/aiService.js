@@ -1,5 +1,5 @@
 const Groq = require("groq-sdk");
-const { GoogleGenAI } = require("@google/genai");
+
 
 // ======================================================
 // Groq Client
@@ -19,15 +19,7 @@ const getClient = () => {
 // Gemini Client
 // ======================================================
 
-const getGeminiClient = () => {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY not configured in .env");
-  }
 
-  return new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-  });
-};
 
 // ======================================================
 // Parse AI Response
@@ -244,74 +236,11 @@ const generateBatch = async (
 // GEMINI
 // ======================================================
 
-const generateBatchGemini = async (
-  topic,
-  count,
-  difficulty,
-  existingQuestions = []
-) => {
 
-  const client = getGeminiClient();
-
-  const prompt = buildPrompt(
-    topic,
-    count,
-    difficulty,
-    existingQuestions
-  );
-
-  const response = await client.models.generateContent({
-  model: "gemini-2.0-flash",   // Keep your current model here
-  contents: prompt,
-});
-
-console.log("========== GEMINI RESPONSE ==========");
-console.log(response.text);
-console.log("====================================");
-
-return response.text;
-    
-};
 
 // ======================================================
 // Auto Fallback
 // ======================================================
-
-const generateWithFallback = async (
-  topic,
-  count,
-  difficulty,
-  existingQuestions = []
-) => {
-
-  try {
-
-    const groq = getClient();
-
-    console.log("Using Groq...");
-
-    return await generateBatch(
-      groq,
-      topic,
-      count,
-      difficulty,
-      existingQuestions
-    );
-
-  } catch (err) {
-
-    console.log(
-      "Groq failed. Switching to Gemini..."
-    );
-
-    return await generateBatchGemini(
-      topic,
-      count,
-      difficulty,
-      existingQuestions
-    );
-  }
-};
 
 
 async function generateFromTopic({
