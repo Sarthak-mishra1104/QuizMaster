@@ -260,15 +260,17 @@ const generateBatchGemini = async (
     existingQuestions
   );
 
-  const response =
-    await client.models.generateContent({
+  const response = await client.models.generateContent({
+  model: "gemini-2.0-flash",   // Keep your current model here
+  contents: prompt,
+});
 
-      model: "gemini-2.5-flash-lite",
+console.log("========== GEMINI RESPONSE ==========");
+console.log(response.text);
+console.log("====================================");
 
-      contents: prompt,
-    });
-
-  return response.text;
+return response.text;
+    
 };
 
 // ======================================================
